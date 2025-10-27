@@ -1,0 +1,107 @@
+#import "_math"
+#import "_ml"
+#import "_neura"
+#import "_csv"
+#import "dataset.csv"
+
+exec(gpu=0)
+
+func() = 'func1'
+{
+	w = 45
+	s = 4.5
+	y = "Hello World"
+	z = 'N'
+	
+	print(a + b, c + d\n)
+}
+
+class() = "Class1" 
+{
+object:
+	a, b, c
+
+member:
+	func(Math) = 'mathFunc1'
+	{
+		print(quad(a, b, c)\n)
+	}
+
+	func(Math) = 'mathFunc2'
+	{
+		print(sqrt(a)\n)
+		print(log10(b))
+		print(pow(c, a))
+	}
+}
+
+func() = 'preprocess'
+{
+	input = normalize(dataset.csv)
+}
+
+class(Layer) = "L1"
+{
+	func(Neuro) = "N1"
+	{	
+		out = sigmoid(weights1 * input + bias1)
+	}
+
+	func(Neuro) = "N1"
+	{	
+		func(ML) = "Regression"
+		{
+			out = reg(input, target)
+		}
+	}
+		
+}
+
+class(Layer) = "L2"
+{
+	func(Neuro) = "N3"
+	{	
+		out = sigmoid(weights2 * L1.N1 + weights3 * L1.N2 + bias2)
+	}
+		
+}
+
+class(Layer) = "Output"
+{
+	func(Neuro) = "Out"
+	{	
+		result = sigmoid(weights4 * H2.N3 + biasOut)
+	}
+		
+}
+
+func() = 'train'
+{
+    for epoch in range(500):
+        prediction = Output.Out
+        loss = lossFunc(prediction, target)
+        adjust(loss)
+}
+
+func(Main) 
+{
+	pingas = 5
+
+	Class1 mathProblem(6, 7, 4)
+
+	mathProblem.mathFunc1()
+	mathProblem.mathFunc2()
+
+	print(func1)
+
+	while (pingas > 0) 
+	{
+		for (i = 0, i < 5, i++)
+		{
+			pingas--
+			print(pingas)
+		}
+	}
+
+	print(train)
+}
