@@ -1,0 +1,14 @@
+# CLion files
+.idea/
+cmake-build-*/
+
+# Build artifacts
+*.exe
+*.out
+lexical_analyzer
+
+# macOS
+.DS_Store
+
+# Output files (optional)
+lexical_report.txt
