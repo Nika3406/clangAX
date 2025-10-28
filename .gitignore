@@ -12,3 +12,4 @@ lexical_analyzer
 
 # Output files (optional)
 lexical_report.txt
+.vscode/tasks.json
