@@ -11,5 +11,5 @@ lexical_analyzer
 .DS_Store
 
 # Output files (optional)
-lexical_report.txt
+lexicalAnalyzer/lexical_report.txt
 .vscode/tasks.json

@@ -8,8 +8,10 @@
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
+#include <filesystem>
 
 using namespace std;
+namespace fs = std::filesystem;
 
 const set<string> SPEC_RESERVED = {
     "func", "class", "object", "member", "import", "exec",
@@ -310,22 +312,36 @@ string formatReport(const LexicalReport& rep) {
 }
 
 int main(int argc, char* argv[]) {
+    string filename;
+
     if (argc < 2) {
-        cout << "Usage: " << argv[0] << " <source.txt>" << endl;
-        return 1;
+        // Default to SampleCode.txt located in the parent folder
+        filename = "../SampleCode.txt";
+        cout << "No source file provided. Using default: " << filename << endl;
+    } else {
+        filename = argv[1];
     }
 
-    string filename = argv[1];
     ifstream file(filename);
+
+    // If not found, also try "../" relative path
     if (!file.is_open()) {
-        cout << "File not found: " << filename << endl;
+        fs::path alt = fs::path("..") / filename;
+        if (fs::exists(alt)) {
+            cout << "File not found in current directory. Using parent: " << alt << endl;
+            file.open(alt);
+        }
+    }
+
+    if (!file.is_open()) {
+        cerr << "Error: could not open source file (" << filename << ")" << endl;
         return 2;
     }
 
     stringstream buffer;
     buffer << file.rdbuf();
-    string src = buffer.str();
     file.close();
+    string src = buffer.str();
 
     LexicalReport rep = tokenizeAndAnalyze(src);
     string report = formatReport(rep);
