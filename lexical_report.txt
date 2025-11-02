@@ -1,9 +1,9 @@
 C-Accel Lexical Report
 ==========================
-Lines processed (comments omitted): 81
+Lines processed (comments omitted): 86
 
-Literals: total=22
-  Unique literals: =0), 45, 4.5, "Hello World", 'N', "Class1", "L1", "N1", "Regression", "L2", "N3", "Output", "Out", (500), 5, (6,, 7,, 4), 0), 0,, 5,
+Literals: total=27
+  Unique literals: "_math", "_ml", "_neura", "_csv", "dataset.csv", 0, 45, 4.5, "Hello World", 'N', "Class1", "L1", "N1", "Regression", "L2", "N3", "Output", "Out", 500, 5, 6, 7, 4
 
 Operators used (with counts):
    * : 4
@@ -19,6 +19,7 @@ Reserved words used (with counts):
   exec: 1
   for: 2
   func: 11
+  import: 10
   in: 1
   member: 1
   object: 1
@@ -28,8 +29,8 @@ Reserved words used (with counts):
 
 Data types used in declarations: (none)
 
-Variables declared (12):
-  gpu, i, input, loss, out, pingas, prediction, result, s, w, y, z
+Variables declared (19):
+  Layer, ML, Math, Neuro, a, b, c, gpu, i, input, loss, out, pingas, prediction, result, s, w, y, z
 Duplicate declarations detected: (none)
 
 All identifiers seen (55):

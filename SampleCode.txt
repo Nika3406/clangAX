@@ -4,8 +4,10 @@
 #import "_csv"
 #import "dataset.csv"
 
+// CPU-GPU connection
 exec(gpu=0)
 
+// Function
 func() = 'func1'
 {
 	w = 45
@@ -83,6 +85,7 @@ func() = 'train'
         adjust(loss)
 }
 
+// Main function
 func(Main) 
 {
 	pingas = 5
