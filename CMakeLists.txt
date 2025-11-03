@@ -11,14 +11,7 @@ add_executable(lexicalAnalyzer
         lexicalAnalyzer/lexical_analyzer.cpp
 )
 
-# Tokenizer Executable
-add_executable(tokenizer
-        tokenizer/tokenizer.cpp
-        tokenizer/mainToken.cpp
-)
-
 # Optional: warnings & optimizations
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(lexicalAnalyzer PRIVATE -Wall -Wextra -O2)
-    target_compile_options(tokenizer PRIVATE -Wall -Wextra -O2)
 endif()
