@@ -9,9 +9,11 @@
 #include <sstream>
 #include <iomanip>
 #include <filesystem>
+#include "symbol_table.h"
 
 using namespace std;
 namespace fs = std::filesystem;
+
 
 const set<string> SPEC_RESERVED = {
     "func", "class", "object", "member", "import", "exec",
@@ -343,13 +345,59 @@ int main(int argc, char* argv[]) {
     file.close();
     string src = buffer.str();
 
-    LexicalReport rep = tokenizeAndAnalyze(src);
+     LexicalReport rep = tokenizeAndAnalyze(src);
     string report = formatReport(rep);
 
-    // Output to console
+    // Output lexical report to console and file (unchanged)
     cout << report << endl;
 
-    // Output to file in the same directory as input file
+    // Build symbol table from lexical report:
+    SymbolTable symtab;
+
+    // Populate: use declared variables and any identifier seen to create entries.
+    // We prefer declared variables and attempt to attach types from data_types_used_counts where possible.
+    // Since the lexical pass doesn't attach per-variable types, we'll insert declared names with unknown type.
+    for (const auto& name : rep.variables_declared) {
+        symtab.insert(name, "", "(unset)", -1);
+    }
+    // Ensure all identifiers seen exist in table (without overwriting declared ones)
+    for (const auto& name : rep.variables_all_identifiers_seen) {
+        symtab.upsert(name, "", "", -1);
+    }
+
+    // Print initial state of symbol table
+    cout << "\n--- Initial Symbol Table ---\n";
+    cout << symtab.formatTable() << endl;
+
+    // Perform example updates: set some values for a subset of declared variables.
+    // Use a deterministic selection: first three symbols (alphabetical) will be updated.
+    auto symbols = symtab.allSymbols();
+    for (size_t i = 0; i < symbols.size() && i < 3; ++i) {
+        const auto& s = symbols[i];
+        // Example assignments (toy): for naming clarity, set value to "val_<name>" or numeric for likely numeric names.
+        string newval = "val_" + s.name;
+        // very small heuristic: if name contains 'i' or 'n' maybe an int-like value
+        if (s.name.find_first_of("0123456789") != string::npos || s.name.find('i') != string::npos) {
+            newval = "0";
+        }
+        symtab.updateValue(s.name, newval);
+    }
+
+    // Also demonstrate type updates for up to two variables using types seen in lexical report.
+    // Assign types in round-robin from data_types_used_counts keys (if any)
+    vector<string> types;
+    for (const auto& kv : rep.data_types_used_counts) types.push_back(kv.first);
+    if (!types.empty()) {
+        for (size_t i = 0; i < symbols.size() && i < 2; ++i) {
+            symtab.updateType(symbols[i].name, types[i % types.size()]);
+        }
+    }
+
+    // Print final state after updates
+    cout << "\n--- Final Symbol Table (after updates) ---\n";
+    cout << symtab.formatTable() << endl;
+
+    // Save lexical report to file (same as original behavior)
     size_t last_slash = filename.find_last_of("/\\");
     string output_path;
     if (last_slash != string::npos) {
