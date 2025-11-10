@@ -349,14 +349,8 @@ int main(int argc, char* argv[]) {
     // Output to console
     cout << report << endl;
 
-    // Output to file in the same directory as input file
-    size_t last_slash = filename.find_last_of("/\\");
-    string output_path;
-    if (last_slash != string::npos) {
-        output_path = filename.substr(0, last_slash + 1) + "lexical_report.txt";
-    } else {
-        output_path = "lexical_report.txt";
-    }
+    // Save report in the current working directory (lexical analyzer's own folder)
+    fs::path output_path = fs::current_path() / "lexical_report.txt";
 
     ofstream output_file(output_path);
     if (output_file.is_open()) {

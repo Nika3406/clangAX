@@ -11,7 +11,13 @@ add_executable(lexicalAnalyzer
         lexicalAnalyzer/lexical_analyzer.cpp
 )
 
+# Symbol Table Executable
+add_executable(symbolTable
+        symbolTable/symbol_table.cpp
+)
+
 # Optional: warnings & optimizations
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(lexicalAnalyzer PRIVATE -Wall -Wextra -O2)
+    target_compile_options(symbolTable PRIVATE -Wall -Wextra -O2)
 endif()
