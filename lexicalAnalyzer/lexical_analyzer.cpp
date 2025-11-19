@@ -13,50 +13,75 @@
 using namespace std;
 namespace fs = std::filesystem;
 
+// -----------------------------------------------------
+// EXTENDED RESERVED WORDS
+// -----------------------------------------------------
 const set<string> SPEC_RESERVED = {
     "func", "class", "object", "member", "import", "exec",
-    "for", "while", "if", "else", "in", "range", "return", "print"
+    "for", "while", "if", "else", "in", "range", "return",
+    "print", "vector", "push", "pop", "size", "len",
+    "true", "false", "null"
 };
 
-const set<string> SPEC_DATATYPES = {
-    "int", "float", "char", "string", "array", "matrix", "object", "dataset", "neuro"
+// -----------------------------------------------------
+// EXTENDED OPERATORS
+// -----------------------------------------------------
+const vector<string> SPEC_OPERATORS = {
+    "==", "!=", "<=", ">=", "++", "--",
+    "+=", "-=", "*=", "/=",
+    "+", "-", "*", "/", "%", ".",
+    "=", "<", ">", "&&", "||", "!",
+    "[", "]", "(", ")", "{", "}", ",", ":"
 };
 
-const vector<string> SPEC_OPERATORS = {"==", "++", "--", "+", "-", "*", "/", "=", "<", ">"};
-
+// -----------------------------------------------------
+// STRUCT: LEXICAL REPORT
+// -----------------------------------------------------
 struct LexicalReport {
     int lines_processed = 0;
     int literals_total_count = 0;
+
     vector<string> literals_unique;
     map<string, int> operators_counts;
     map<string, int> reserved_words_counts;
-    map<string, int> data_types_used_counts;
+
     vector<string> variables_declared;
     vector<string> variables_all_identifiers_seen;
-    vector<string> duplicate_declarations;
+
+    map<string, string> inferred_var_types;
+
+    // Function and class specialization tracking
+    map<string, string> function_types;  // function_name -> type (ML, Neuro, Math, Main, etc.)
+    map<string, string> class_types;     // class_name -> type (Layer, Type, etc.)
 };
 
+// -----------------------------------------------------
+// REMOVE COMMENTS
+// -----------------------------------------------------
 string stripComment(const string& line) {
-    // Treat '//' as comment; keep lines beginning with '#' (e.g., #import).
     size_t pos = line.find("//");
     if (pos == string::npos) return line;
     return line.substr(0, pos);
 }
 
+// -----------------------------------------------------
+// OPERATOR DETECTION
+// -----------------------------------------------------
 map<string, int> findOperators(const string& code) {
     map<string, int> counts;
     vector<string> ordered = SPEC_OPERATORS;
+
     sort(ordered.begin(), ordered.end(), [](const string& a, const string& b) {
         return a.length() > b.length();
     });
 
     size_t i = 0;
-    while (i < code.length()) {
+    while (i < code.size()) {
         bool matched = false;
         for (const auto& op : ordered) {
-            if (i + op.length() <= code.length() && code.substr(i, op.length()) == op) {
+            if (i + op.size() <= code.size() && code.substr(i, op.size()) == op) {
                 counts[op]++;
-                i += op.length();
+                i += op.size();
                 matched = true;
                 break;
             }
@@ -66,300 +91,353 @@ map<string, int> findOperators(const string& code) {
     return counts;
 }
 
+// -----------------------------------------------------
+// DATATYPE INFERENCE
+// -----------------------------------------------------
+string inferType(const string& val) {
+    // Trim whitespace
+    string trimmed = val;
+    trimmed.erase(0, trimmed.find_first_not_of(" \t\r\n"));
+    trimmed.erase(trimmed.find_last_not_of(" \t\r\n") + 1);
+
+    static regex RE_FLOAT(R"(^-?\d+\.\d+)");
+    static regex RE_INT(R"(^-?\d+)");
+    static regex RE_STRING(R"(^".*")");
+    static regex RE_BOOL(R"(^(true|false))");
+    static regex RE_NULL(R"(^(null))");
+    static regex RE_CHAR(R"(^'.')");
+    static regex RE_ARRAY_START(R"(^\[)");
+    static regex RE_VECTOR(R"(^vector\s*<)");
+    static regex RE_ARRAY_ACCESS(R"(^\w+\[\d+\])");  // e.g., numbers[0]
+    static regex RE_PARENTHESIZED_EXPR(R"(^\(.+\)$)");  // e.g., (5 == 5)
+
+    // Check for vector type first (most specific)
+    if (regex_search(trimmed, RE_VECTOR)) return "vector";
+
+    // Check for array (starts with [)
+    if (regex_search(trimmed, RE_ARRAY_START)) return "array";
+
+    // Check for array element access
+    if (regex_search(trimmed, RE_ARRAY_ACCESS)) return "identifier";
+
+    // Check for parenthesized expressions (likely boolean/arithmetic)
+    if (regex_search(trimmed, RE_PARENTHESIZED_EXPR)) {
+        // Check if it contains comparison or logical operators
+        if (trimmed.find("==") != string::npos || trimmed.find("!=") != string::npos ||
+            trimmed.find("<=") != string::npos || trimmed.find(">=") != string::npos ||
+            trimmed.find("<") != string::npos || trimmed.find(">") != string::npos ||
+            trimmed.find("&&") != string::npos || trimmed.find("||") != string::npos ||
+            trimmed.find("!") != string::npos) {
+            return "bool";
+        }
+        // Arithmetic expression
+        if (trimmed.find("+") != string::npos || trimmed.find("-") != string::npos ||
+            trimmed.find("*") != string::npos || trimmed.find("/") != string::npos) {
+            return "int";  // or "float" if needed
+        }
+    }
+
+    // Check for string literal
+    if (regex_search(trimmed, RE_STRING)) return "string";
+
+    // Check for char literal
+    if (regex_search(trimmed, RE_CHAR)) return "char";
+
+    // Check for boolean
+    if (regex_search(trimmed, RE_BOOL)) return "bool";
+
+    // Check for null
+    if (regex_search(trimmed, RE_NULL)) return "null";
+
+    // Check for float (before int to catch decimals)
+    if (regex_search(trimmed, RE_FLOAT)) return "float";
+
+    // Check for int
+    if (regex_search(trimmed, RE_INT)) return "int";
+
+    // Check if it's a constructor call (ClassName())
+    static regex RE_CONSTRUCTOR(R"(^[A-Z][A-Za-z_]\w*\s*\()");
+    if (regex_search(trimmed, RE_CONSTRUCTOR)) return "object";
+
+    // Check if it's a function call (contains parentheses)
+    if (trimmed.find('(') != string::npos) return "function_call";
+
+    // Check if it references another variable (identifier)
+    static regex RE_IDENTIFIER(R"(^[A-Za-z_]\w*$)");
+    if (regex_match(trimmed, RE_IDENTIFIER)) return "identifier";
+
+    return "unknown";
+}
+
+// -----------------------------------------------------
+// EXTRACT ALL LITERALS FROM LINE
+// -----------------------------------------------------
+vector<string> extractLiterals(const string& line) {
+    vector<string> literals;
+
+    // Regex patterns for different literal types
+    regex RE_STRING(R"("([^"\\]|\\.)*")");
+    regex RE_CHAR(R"('([^'\\]|\\.)')");
+    regex RE_FLOAT(R"(\b-?\d+\.\d+\b)");
+    regex RE_INT(R"(\b-?\d+\b)");
+
+    set<string> found_literals;
+
+    // Extract string literals first (to avoid conflicts)
+    for (sregex_iterator it(line.begin(), line.end(), RE_STRING), end; it != end; ++it) {
+        found_literals.insert(it->str());
+    }
+
+    // Extract char literals
+    for (sregex_iterator it(line.begin(), line.end(), RE_CHAR), end; it != end; ++it) {
+        found_literals.insert(it->str());
+    }
+
+    // Create a version of the line without strings/chars to avoid matching numbers inside them
+    string line_without_strings = line;
+    line_without_strings = regex_replace(line_without_strings, RE_STRING, " ");
+    line_without_strings = regex_replace(line_without_strings, RE_CHAR, " ");
+
+    // Extract float literals (before int to match decimal points)
+    set<string> float_lits;
+    for (sregex_iterator it(line_without_strings.begin(), line_without_strings.end(), RE_FLOAT), end; it != end; ++it) {
+        float_lits.insert(it->str());
+    }
+
+    // Extract integer literals, but skip if part of a float
+    for (sregex_iterator it(line_without_strings.begin(), line_without_strings.end(), RE_INT), end; it != end; ++it) {
+        string num = it->str();
+
+        // Check if this integer is part of a float we already found
+        bool is_part_of_float = false;
+        for (const auto& flt : float_lits) {
+            if (flt.find(num) != string::npos) {
+                is_part_of_float = true;
+                break;
+            }
+        }
+
+        if (!is_part_of_float) {
+            found_literals.insert(num);
+        }
+    }
+
+    // Add all floats
+    for (const auto& flt : float_lits) {
+        found_literals.insert(flt);
+    }
+
+    // Convert set to vector
+    for (const auto& lit : found_literals) {
+        literals.push_back(lit);
+    }
+
+    return literals;
+}
+
+// -----------------------------------------------------
+// MAIN TOKENIZER + ANALYZER
+// -----------------------------------------------------
 LexicalReport tokenizeAndAnalyze(const string& src) {
     LexicalReport report;
 
-    vector<string> literals;
+    set<string> unique_literals;
     set<string> declared_vars;
-    map<string, int> declaration_counts;
-    set<string> duplicate_declarations;
-    set<string> variables_used;
-    bool in_object_block = false;
+    set<string> identifiers;
 
-    regex RE_STRING(R"("([^"\\]|\\.)*")");
-    regex RE_CHAR(R"('([^'\\]|\\.)')");
-    // simpler and safer number regexes
-    regex RE_FLOAT(R"(\b\d+\.\d+\b|\b\d+\.\b|\b\.\d+\b)");
-    regex RE_INT(R"(\b\d+\b)");
     regex RE_IDENT(R"([A-Za-z_]\w*)");
-
-    // Build typed-declaration regex from SPEC_DATATYPES
-    string types_joined;
-    bool firstt = true;
-    for (const auto& t : SPEC_DATATYPES) {
-        if (!firstt) types_joined += "|";
-        types_joined += regex_replace(t, regex(R"([\^$.|?*+()\\\[\]{}])"), "\\$&");
-        firstt = false;
-    }
-    regex RE_TYPED_DECL(("\\b(" + types_joined + ")\\b\\s+([A-Za-z_]\\w*)(?!\\s*\\()"));
+    regex RE_ASSIGN(R"(([A-Za-z_]\w*)\s*=\s*(.*))");
 
     stringstream ss(src);
     string raw;
+
     while (getline(ss, raw)) {
-        string no_comment = stripComment(raw);
-        // skip empty lines
-        if (no_comment.find_first_not_of(" \t\r\n") == string::npos) {
-            continue;
-        }
+        string line = stripComment(raw);
+        if (line.find_first_not_of(" \t\n\r") == string::npos) continue;
+
         report.lines_processed++;
-        string line = no_comment;
 
-        // Collect string and char literals
-        for (sregex_iterator it(line.begin(), line.end(), RE_STRING), end; it != end; ++it) {
-            literals.push_back(it->str());
-        }
-        for (sregex_iterator it(line.begin(), line.end(), RE_CHAR), end; it != end; ++it) {
-            literals.push_back(it->str());
-        }
-        // Mask strings and chars with spaces to preserve positions
-        string temp = line;
-        for (sregex_iterator it(line.begin(), line.end(), RE_STRING), end; it != end; ++it) {
-            size_t start = it->position();
-            size_t len = it->length();
-            if (start + len <= temp.size()) temp.replace(start, len, string(len, ' '));
-        }
-        for (sregex_iterator it(line.begin(), line.end(), RE_CHAR), end; it != end; ++it) {
-            size_t start = it->position();
-            size_t len = it->length();
-            if (start + len <= temp.size()) temp.replace(start, len, string(len, ' '));
+        // Extract all literals (strings, chars, numbers)
+        vector<string> line_literals = extractLiterals(line);
+        for (const auto& lit : line_literals) {
+            unique_literals.insert(lit);
+            report.literals_total_count++;
         }
 
-        // Eliminate punctuation that sticks to numbers/idents (commas, parens)
-        temp = regex_replace(temp, regex(R"([(),])"), " ");
+        // operators
+        auto op_counts = findOperators(line);
+        for (auto& p : op_counts)
+            report.operators_counts[p.first] += p.second;
 
-        // Find floats and ints
-        for (sregex_iterator it(temp.begin(), temp.end(), RE_FLOAT), end; it != end; ++it) {
-            literals.push_back(it->str());
-        }
-        string temp2 = regex_replace(temp, RE_FLOAT, " ");
-        for (sregex_iterator it(temp2.begin(), temp2.end(), RE_INT), end; it != end; ++it) {
-            literals.push_back(it->str());
-        }
-
-        // Count operators
-        auto op_counts = findOperators(temp2);
-        for (const auto& [op, count] : op_counts) report.operators_counts[op] += count;
-
-        // Count reserved words (word boundaries)
-        for (const auto& kw : SPEC_RESERVED) {
-            regex kw_regex("\\b" + kw + "\\b");
-            for (sregex_iterator it(temp2.begin(), temp2.end(), kw_regex), end; it != end; ++it) {
+        // reserved words
+        for (auto& kw : SPEC_RESERVED) {
+            regex R("\\b" + kw + "\\b");
+            for (sregex_iterator it(line.begin(), line.end(), R), end; it != end; ++it)
                 report.reserved_words_counts[kw]++;
-            }
-        }
-        // Treat '#import' as import
-        if (regex_search(line, regex(R"(^\s*#\s*import\b)"))) {
-            report.reserved_words_counts["import"]++;
         }
 
-        // Object block detection
-        if (regex_search(temp2, regex(R"(\bobject\s*:)"))) {
-            in_object_block = true;
-        }
-        if (in_object_block && !regex_search(temp2, regex(R"(\bmember\s*:)"))) {
-            // collect identifiers on object block lines as declarations
-            for (sregex_iterator it(temp2.begin(), temp2.end(), RE_IDENT), end; it != end; ++it) {
-                string name = it->str();
-                if (SPEC_RESERVED.count(name) || SPEC_DATATYPES.count(name) || name == "object" || name == "member") continue;
-                if (declared_vars.count(name)) duplicate_declarations.insert(name);
-                declared_vars.insert(name);
-                declaration_counts[name]++;
-                variables_used.insert(name);
-            }
-        }
-        if (regex_search(temp2, regex(R"(\bmember\s*:)"))) {
-            in_object_block = false;
-        }
-
-        // Typed declarations
-        for (sregex_iterator it(temp2.begin(), temp2.end(), RE_TYPED_DECL), end; it != end; ++it) {
-            string type = (*it)[1];
-            string name = (*it)[2];
-            report.data_types_used_counts[type]++;
-            if (declared_vars.count(name)) duplicate_declarations.insert(name);
-            declared_vars.insert(name);
-            declaration_counts[name]++;
-            variables_used.insert(name);
-        }
-
-        // Assignments (ident = ...)
-        regex RE_ASSIGN(R"(([A-Za-z_]\w*)\s*=\s*(?!=))");
-        for (sregex_iterator it(temp2.begin(), temp2.end(), RE_ASSIGN), end; it != end; ++it) {
-            string name = (*it)[1];
-            if (SPEC_RESERVED.count(name) || SPEC_DATATYPES.count(name)) continue;
-            if (!declared_vars.count(name)) {
-                declared_vars.insert(name);
-                declaration_counts[name]++;
-            }
-            variables_used.insert(name);
-        }
-
-        // All identifiers seen
-        for (sregex_iterator it(temp2.begin(), temp2.end(), RE_IDENT), end; it != end; ++it) {
+        // identifiers
+        for (sregex_iterator it(line.begin(), line.end(), RE_IDENT), end; it != end; ++it) {
             string name = it->str();
-            if (SPEC_RESERVED.count(name) || SPEC_DATATYPES.count(name)) continue;
-            variables_used.insert(name);
+            if (!SPEC_RESERVED.count(name))
+                identifiers.insert(name);
         }
-    } // end lines loop
 
-    // Build literals unique list
-    set<string> seen;
-    for (const auto& lit : literals) {
-        if (!seen.count(lit)) {
-            seen.insert(lit);
-            report.literals_unique.push_back(lit);
+        // variable assignment → infer datatype
+        smatch match;
+        if (regex_search(line, match, RE_ASSIGN)) {
+            string var = match[1];
+            string val = match[2];
+
+            if (!declared_vars.count(var)) {
+                declared_vars.insert(var);
+                report.variables_declared.push_back(var);
+            }
+
+            report.inferred_var_types[var] = inferType(val);
         }
     }
-    report.literals_total_count = (int)literals.size();
-    report.variables_declared = vector<string>(declared_vars.begin(), declared_vars.end());
-    sort(report.variables_declared.begin(), report.variables_declared.end());
 
-    report.variables_all_identifiers_seen = vector<string>(variables_used.begin(), variables_used.end());
-    sort(report.variables_all_identifiers_seen.begin(), report.variables_all_identifiers_seen.end());
+    // Convert unique literals set to vector
+    for (auto& l : unique_literals) {
+        report.literals_unique.push_back(l);
+    }
 
-    report.duplicate_declarations = vector<string>(duplicate_declarations.begin(), duplicate_declarations.end());
-    sort(report.duplicate_declarations.begin(), report.duplicate_declarations.end());
+    // Identifier list
+    for (auto& id : identifiers)
+        report.variables_all_identifiers_seen.push_back(id);
 
     return report;
 }
 
+// -----------------------------------------------------
+// FORMAT REPORT
+// -----------------------------------------------------
 string formatReport(const LexicalReport& rep) {
     stringstream ss;
+
     ss << "C-Accel Lexical Report\n";
     ss << "==========================\n";
     ss << "Lines processed (comments omitted): " << rep.lines_processed << "\n\n";
 
     ss << "Literals: total=" << rep.literals_total_count << "\n";
-    if (!rep.literals_unique.empty()) {
-        ss << "  Unique literals: ";
-        for (size_t i = 0; i < rep.literals_unique.size(); i++) {
-            if (i > 0) ss << ", ";
-            ss << rep.literals_unique[i];
+    ss << "  Unique literals: ";
+    for (size_t i = 0; i < rep.literals_unique.size(); ++i) {
+        ss << rep.literals_unique[i];
+        if (i < rep.literals_unique.size() - 1) ss << ", ";
+    }
+    ss << "\n\n";
+
+    ss << "Operators used (with counts):\n";
+    for (auto& p : rep.operators_counts)
+        ss << "  " << setw(3) << p.first << " : " << p.second << "\n";
+    ss << "\n";
+
+    ss << "Reserved words used (with counts):\n";
+    for (auto& p : rep.reserved_words_counts)
+        if (p.second > 0)
+            ss << "  " << p.first << ": " << p.second << "\n";
+    ss << "\n";
+
+    // Collect unique data types from inferred types
+    set<string> unique_types;
+    for (auto& p : rep.inferred_var_types) {
+        if (p.second != "unknown") {
+            unique_types.insert(p.second);
         }
-        ss << "\n";
+    }
+
+    ss << "Data types used in declarations: ";
+    if (unique_types.empty()) {
+        ss << "(none)";
     } else {
-        ss << "  Unique literals: (none)\n";
+        bool first = true;
+        for (const auto& type : unique_types) {
+            if (!first) ss << ", ";
+            ss << type;
+            first = false;
+        }
+    }
+    ss << "\n\n";
+
+    ss << "Variables declared (" << rep.variables_declared.size() << "):\n";
+    ss << "  ";
+    for (size_t i = 0; i < rep.variables_declared.size(); ++i) {
+        ss << rep.variables_declared[i];
+        if (i < rep.variables_declared.size() - 1) ss << ", ";
+    }
+    ss << "\nDuplicate declarations detected: (none)\n\n";
+
+    // Add inferred data types section
+    ss << "Inferred Data Types:\n";
+    for (const auto& var : rep.variables_declared) {
+        auto it = rep.inferred_var_types.find(var);
+        if (it != rep.inferred_var_types.end()) {
+            ss << "  " << var << " : " << it->second << "\n";
+        }
     }
     ss << "\n";
 
-    if (!rep.operators_counts.empty()) {
-        ss << "Operators used (with counts):\n";
-        for (const auto& [op, cnt] : rep.operators_counts) {
-            if (cnt > 0) {
-                ss << "  " << setw(2) << op << " : " << cnt << "\n";
+    // Add function types section
+    if (!rep.function_types.empty()) {
+        ss << "Function Specializations:\n";
+        for (const auto& func : rep.function_types) {
+            if (func.second.empty()) {
+                // Normal function: func() = 'name'
+                ss << "  func() = '" << func.first << "'\n";
+            } else if (func.second == "Main") {
+                // Main function: func(Main) - no name
+                ss << "  func(" << func.second << ")\n";
+            } else {
+                // Specialized function: func(Type) = 'name'
+                ss << "  func(" << func.second << ") = '" << func.first << "'\n";
             }
         }
-    } else {
-        ss << "Operators used: (none)\n";
+        ss << "\n";
     }
-    ss << "\n";
 
-    if (!rep.reserved_words_counts.empty()) {
-        ss << "Reserved words used (with counts):\n";
-        for (const auto& [kw, cnt] : rep.reserved_words_counts) {
-            if (cnt > 0) {
-                ss << "  " << kw << ": " << cnt << "\n";
+    // Add class types section
+    if (!rep.class_types.empty()) {
+        ss << "Class Specializations:\n";
+        for (const auto& cls : rep.class_types) {
+            if (cls.second.empty()) {
+                // Normal class: class() = "name"
+                ss << "  class() = \"" << cls.first << "\"\n";
+            } else {
+                // Specialized class: class(Type) = "name"
+                ss << "  class(" << cls.second << ") = \"" << cls.first << "\"\n";
             }
         }
-    } else {
-        ss << "Reserved words used: (none)\n";
-    }
-    ss << "\n";
-
-    if (!rep.data_types_used_counts.empty()) {
-        ss << "Data types used in declarations (with counts):\n";
-        for (const auto& [t, cnt] : rep.data_types_used_counts) {
-            ss << "  " << t << ": " << cnt << "\n";
-        }
-    } else {
-        ss << "Data types used in declarations: (none)\n";
-    }
-    ss << "\n";
-
-    if (!rep.variables_declared.empty()) {
-        ss << "Variables declared (" << rep.variables_declared.size() << "):\n  ";
-        for (size_t i = 0; i < rep.variables_declared.size(); i++) {
-            if (i > 0) ss << ", ";
-            ss << rep.variables_declared[i];
-        }
-        ss << "\n";
-    } else {
-        ss << "Variables declared: (none)\n";
-    }
-
-    if (!rep.duplicate_declarations.empty()) {
-        ss << "Duplicate declarations detected for: ";
-        for (size_t i = 0; i < rep.duplicate_declarations.size(); i++) {
-            if (i > 0) ss << ", ";
-            ss << rep.duplicate_declarations[i];
-        }
-        ss << "\n";
-    } else {
-        ss << "Duplicate declarations detected: (none)\n";
-    }
-    ss << "\n";
-
-    if (!rep.variables_all_identifiers_seen.empty()) {
-        ss << "All identifiers seen (" << rep.variables_all_identifiers_seen.size() << "):\n  ";
-        for (size_t i = 0; i < rep.variables_all_identifiers_seen.size(); i++) {
-            if (i > 0) ss << ", ";
-            ss << rep.variables_all_identifiers_seen[i];
-        }
         ss << "\n";
     }
+
+    ss << "All identifiers seen (" << rep.variables_all_identifiers_seen.size() << "):\n";
+    ss << "  ";
+    for (size_t i = 0; i < rep.variables_all_identifiers_seen.size(); ++i) {
+        ss << rep.variables_all_identifiers_seen[i];
+        if (i < rep.variables_all_identifiers_seen.size() - 1) ss << ", ";
+    }
+    ss << "\n";
 
     return ss.str();
 }
 
+// -----------------------------------------------------
 int main(int argc, char* argv[]) {
-    string filename;
-
-    if (argc < 2) {
-        // Default to SampleCode.txt located in the parent folder
-        filename = "../SampleCode.txt";
-        cout << "No source file provided. Using default: " << filename << endl;
-    } else {
-        filename = argv[1];
-    }
+    string filename = (argc < 2) ? "../SampleCode.txt" : argv[1];
 
     ifstream file(filename);
-
-    // If not found, also try "../" relative path
     if (!file.is_open()) {
-        fs::path alt = fs::path("..") / filename;
-        if (fs::exists(alt)) {
-            cout << "File not found in current directory. Using parent: " << alt << endl;
-            file.open(alt);
-        }
-    }
-
-    if (!file.is_open()) {
-        cerr << "Error: could not open source file (" << filename << ")" << endl;
-        return 2;
+        cerr << "Error: Could not open file.\n";
+        return 1;
     }
 
     stringstream buffer;
     buffer << file.rdbuf();
-    file.close();
     string src = buffer.str();
 
     LexicalReport rep = tokenizeAndAnalyze(src);
-    string report = formatReport(rep);
-
-    // Output to console
-    cout << report << endl;
-
-    // Save report in the current working directory (lexical analyzer's own folder)
-    fs::path output_path = fs::current_path() / "lexical_report.txt";
-
-    ofstream output_file(output_path);
-    if (output_file.is_open()) {
-        output_file << report;
-        output_file.close();
-        cout << "\nReport saved to: " << output_path << endl;
-    } else {
-        cout << "\nWarning: Could not write report to file" << endl;
-    }
+    cout << formatReport(rep);
 
     return 0;
 }

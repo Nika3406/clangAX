@@ -1,110 +1,514 @@
-#import "_math"
-#import "_ml"
-#import "_neura"
-#import "_csv"
-#import "dataset.csv"
+#import "Sample"
+#import "MLCore"
 
-// CPU-GPU connection
-exec(gpu=0)
+exec(gpu=0, 0.55)
+exec(cpu=1, 1.0)
+exec(threads=4, 0.75)
 
-// Function
-func() = 'func1'
+// ============================
+// PRIMITIVE DATA TYPES
+// ============================
+
+func() = 'primitives'
 {
-	w = 45
-	s = 4.5
-	y = "Hello World"
-	z = 'N'
-	
-	print(a + b, c + d\n)
+    // Integer literals
+    int_positive = 42
+    int_negative = -100
+    int_zero = 0
+    int_large = 999999
+
+    // Float literals
+    float_decimal = 3.14159
+    float_scientific = 2.5
+    float_small = 0.001
+    float_negative = -99.99
+
+    // String literals
+    str_simple = "Hello World"
+    str_with_space = "This is a test"
+    str_special = "Special chars: @#$%"
+    str_empty = ""
+    str_path = "/usr/local/bin"
+
+    // Character literals
+    char_letter = 'A'
+    char_digit = '5'
+    char_symbol = '@'
+    char_space = ' '
+
+    // Boolean literals
+    flag_true = true
+    flag_false = false
+    is_active = true
+
+    // Null value
+    null_var = null
+
+    print("Primitive types initialized")
 }
 
-class() = "Class1" 
+
+// ============================
+// ARRAY DEMONSTRATIONS
+// ============================
+
+func() = 'arrayExamples'
+{
+    // Simple arrays
+    numbers = [1, 2, 3, 4, 5]
+    floats = [1.1, 2.2, 3.3, 4.4, 5.5]
+    strings = ["alpha", "beta", "gamma", "delta"]
+    mixed = [1, 2.5, "text", true]
+
+    // 2D arrays (matrices)
+    matrix_2x2 = [
+        [1, 2],
+        [3, 4]
+    ]
+
+    matrix_3x3 = [
+        [1.0, 2.0, 3.0],
+        [4.0, 5.0, 6.0],
+        [7.0, 8.0, 9.0]
+    ]
+
+    // Empty array
+    empty_arr = []
+
+    // Nested arrays
+    nested = [
+        [1, 2, 3],
+        [4, 5, 6],
+        [7, 8, 9]
+    ]
+
+    // Array operations
+    first = numbers[0]
+    last = numbers[4]
+    numbers[2] = 99
+
+    // Loop through array
+    for (idx = 0, idx < len(numbers), idx++)
+    {
+        print(numbers[idx])
+    }
+
+    print("Array examples completed")
+}
+
+
+// ============================
+// VECTOR DEMONSTRATIONS
+// ============================
+
+func() = 'vectorExamples'
+{
+    // Vector declarations
+    vector<int> int_vec
+    vector<float> float_vec
+    vector<string> str_vec
+    vector<char> char_vec
+
+    // Push operations
+    int_vec.push(10)
+    int_vec.push(20)
+    int_vec.push(30)
+    int_vec.push(40)
+    int_vec.push(50)
+
+    float_vec.push(1.5)
+    float_vec.push(2.5)
+    float_vec.push(3.5)
+
+    str_vec.push("first")
+    str_vec.push("second")
+    str_vec.push("third")
+
+    char_vec.push('X')
+    char_vec.push('Y')
+    char_vec.push('Z')
+
+    // Access vector elements
+    first_int = int_vec[0]
+    second_float = float_vec[1]
+
+    // Modify vector elements
+    int_vec[0] = 100
+    float_vec[1] = 9.99
+
+    // Pop operations
+    int_vec.pop()
+    str_vec.pop()
+
+    // Get vector size
+    vec_size = int_vec.size()
+
+    // Iterate through vectors
+    for (i = 0, i < int_vec.size(), i++)
+    {
+        print(int_vec[i])
+    }
+
+    print("Vector examples completed")
+}
+
+
+// ============================
+// OPERATOR DEMONSTRATIONS
+// ============================
+
+func() = 'operatorExamples'
+{
+    // Arithmetic operators
+    add_result = 10 + 5
+    sub_result = 10 - 5
+    mul_result = 10 * 5
+    div_result = 10 / 5
+    mod_result = 10 % 3
+
+    // Comparison operators
+    is_equal = (5 == 5)
+    not_equal = (5 != 3)
+    less_than = (3 < 5)
+    greater_than = (5 > 3)
+    less_equal = (3 <= 5)
+    greater_equal = (5 >= 3)
+
+    // Logical operators
+    and_result = (true && true)
+    or_result = (true || false)
+    not_result = (!false)
+
+    // Increment/Decrement
+    counter = 0
+    counter++
+    counter++
+    counter--
+
+    // Compound assignment operators
+    value = 10
+    value += 5
+    value -= 3
+    value *= 2
+    value /= 4
+
+    print("Operator examples completed")
+}
+
+
+// ============================
+// CONTROL FLOW DEMONSTRATIONS
+// ============================
+
+func() = 'controlFlow'
+{
+    // For loops
+    for (i = 0, i < 10, i++)
+    {
+        print(i)
+    }
+
+    for (j = 10, j > 0, j--)
+    {
+        print(j)
+    }
+
+    // While loops
+    counter = 0
+    while (counter < 5)
+    {
+        print(counter)
+        counter++
+    }
+
+    // If-else statements
+    value = 42
+    if (value > 50)
+    {
+        print("Greater than 50")
+    }
+    else
+    {
+        print("Less than or equal to 50")
+    }
+
+    // Nested conditions
+    x = 10
+    y = 20
+    if (x < y)
+    {
+        if (x > 0)
+        {
+            print("Positive and less than y")
+        }
+    }
+
+    // Range iteration
+    for (num in range(0, 10))
+    {
+        print(num)
+    }
+
+    print("Control flow examples completed")
+}
+
+
+// ============================
+// CLASS DEMONSTRATIONS
+// ============================
+
+class() = "Person"
 {
 object:
-	a, b, c
+    name
+    age
+    email
 
 member:
-	func(Math) = 'mathFunc1'
-	{
-		print(quad(a, b, c)\n)
-	}
+    func() = 'init'
+    {
+        name = "John Doe"
+        age = 30
+        email = "john@example.com"
+    }
 
-	func(Math) = 'mathFunc2'
-	{
-		print(sqrt(a)\n)
-		print(log10(b))
-		print(pow(c, a))
-	}
+    func() = 'displayInfo'
+    {
+        print(name)
+        print(age)
+        print(email)
+    }
+
+    func() = 'setAge'
+    {
+        age = 31
+    }
 }
 
-func() = 'preprocess'
+class() = "Rectangle"
 {
-	input = normalize(dataset.csv)
+object:
+    width
+    height
+    area
+
+member:
+    func() = 'init'
+    {
+        width = 10.5
+        height = 20.5
+        area = 0.0
+    }
+
+    func() = 'calculateArea'
+    {
+        area = width * height
+        return area
+    }
+
+    func(Type) = 'displayDimensions'
+    {
+        print("Width:")
+        print(width)
+        print("Height:")
+        print(height)
+        print("Area:")
+        print(area)
+    }
 }
 
-class(Layer) = "L1"
+class(Type) = "DataContainer"
 {
-	func(Neuro) = "N1"
-	{	
-		out = sigmoid(weights1 * input + bias1)
-	}
+object:
+    values
+    buffer
+    metadata
 
-	func(Neuro) = "N1"
-	{	
-		func(ML) = "Regression"
-		{
-			out = reg(input, target)
-		}
-	}
-		
+member:
+    func() = 'init'
+    {
+        // Member array
+        values = [5, 10, 15, 20, 25]
+
+        // Member vector
+        vector<float> buffer
+        buffer.push(1.1)
+        buffer.push(2.2)
+        buffer.push(3.3)
+        buffer.push(4.4)
+
+        // Member string
+        metadata = "Container v1.0"
+    }
+
+    func() = 'show'
+    {
+        print("Values array:")
+        for (i = 0, i < len(values), i++)
+        {
+            print(values[i])
+        }
+
+        print("Buffer vector:")
+        for (j = 0, j < buffer.size(), j++)
+        {
+            print(buffer[j])
+        }
+
+        print(metadata)
+    }
+
+    func() = 'addValue'
+    {
+        values[0] = 100
+        buffer.push(5.5)
+    }
 }
 
-class(Layer) = "L2"
+
+// ============================
+// FUNCTION CALLS & OBJECTS
+// ============================
+
+func() = 'objectExamples'
 {
-	func(Neuro) = "N3"
-	{	
-		out = sigmoid(weights2 * L1.N1 + weights3 * L1.N2 + bias2)
-	}
-		
+    // Create objects (constructor calls)
+    person = Person()
+    rect = Rectangle()
+    container = DataContainer()
+
+    // Initialize objects
+    person.init()
+    rect.init()
+    container.init()
+
+    // Call member functions
+    person.displayInfo()
+    rect.calculateArea()
+    rect.displayDimensions()
+    container.show()
+
+    // Modify object state
+    person.setAge()
+    container.addValue()
+
+    print("Object examples completed")
 }
 
-class(Layer) = "Output"
+
+// ============================
+// RESERVED WORDS USAGE
+// ============================
+
+func() = 'reservedWordsDemo'
 {
-	func(Neuro) = "Out"
-	{	
-		result = sigmoid(weights4 * H2.N3 + biasOut)
-	}
-		
+    // Using various reserved words
+    for (i = 0, i < 5, i++)
+    {
+        if (i == 3)
+        {
+            print("Found three")
+        }
+        else
+        {
+            print(i)
+        }
+    }
+
+    count = 0
+    while (count < 3)
+    {
+        print(count)
+        count++
+    }
+
+    // Range usage
+    for (val in range(1, 5))
+    {
+        print(val)
+    }
+
+    // Vector operations
+    vector<int> temp
+    temp.push(1)
+    temp.push(2)
+    temp.pop()
+    size = temp.size()
+
+    // Array length
+    arr = [1, 2, 3]
+    length = len(arr)
+
+    print("Reserved words demo completed")
 }
 
-func() = 'train'
+
+// ============================
+// EDGE CASES & SPECIAL SCENARIOS
+// ============================
+
+func() = 'edgeCases'
 {
-    for epoch in range(500):
-        prediction = Output.Out
-        loss = lossFunc(prediction, target)
-        adjust(loss)
+    // Very long numbers
+    large_int = 123456789
+    large_float = 987654.321
+
+    // Multiple assignments on similar lines
+    a = 1
+    b = 2
+    c = 3
+
+    // Chained operations
+    result = ((10 + 5) * 2) - 3
+
+    // Array with single element
+    single = [42]
+
+    // Empty string
+    empty = ""
+
+    // Multiple dots (decimal and member access)
+    value = 3.14
+    vector<float> nums
+    nums.push(value)
+    size = nums.size()
+
+    // Nested brackets
+    complex = [[1, 2], [3, 4], [5, 6]]
+
+    // Multiple operators in sequence
+    x = 10
+    x++
+    x--
+    x += 5
+    x -= 2
+    x *= 3
+
+    print("Edge cases completed")
 }
 
-// Main function
-func(Main) 
+
+// ============================
+// MAIN ENTRY POINT
+// ============================
+
+func(Main)
 {
-	pingas = 5
+    print("========================================")
+    print("C-Accel Comprehensive Test Suite")
+    print("========================================")
 
-	Class1 mathProblem(6, 7, 4)
+    // Execute all test functions
+    primitives()
+    arrayExamples()
+    vectorExamples()
+    operatorExamples()
+    controlFlow()
+    objectExamples()
+    reservedWordsDemo()
+    edgeCases()
 
-	mathProblem.mathFunc1()
-	mathProblem.mathFunc2()
-
-	print(func1)
-
-	while (pingas > 0) 
-	{
-		for (i = 0, i < 5, i++)
-		{
-			pingas--
-			print(pingas)
-		}
-	}
-
-	print(train)
+    print("========================================")
+    print("All tests completed successfully!")
+    print("========================================")
 }
