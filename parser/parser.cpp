@@ -418,29 +418,54 @@ private:
     }
 
     shared_ptr<ASTNode> parseExec() {
-
-        Token execToken = tokens[current - 1];   // EXEC already consumed by match()
+        // EXEC has already been consumed by match() in parseProgram()
+        Token execToken = tokens[current - 1];
         expect(TokenType::LPAREN, "Expected '(' after exec");
 
         auto node = make_shared<ASTNode>(NodeType::EXEC_STMT, "exec", execToken.line);
 
+        int safety_counter = 0;
+        const int MAX_ITER = 10000;
+
         while (peek().type != TokenType::RPAREN &&
                peek().type != TokenType::END_OF_FILE) {
 
-            if (peek().type == TokenType::IDENTIFIER) {
-                Token param = advance();
-                expect(TokenType::ASSIGN, "Expected '=' in exec");
-                Token value = advance();
-
-                auto paramNode = make_shared<ASTNode>(NodeType::ASSIGNMENT, param.value);
-                auto valueNode = make_shared<ASTNode>(NodeType::LITERAL, value.value);
-                paramNode->addChild(valueNode);
-                node->addChild(paramNode);
+            if (++safety_counter > MAX_ITER) {
+                errors.push_back("Line " + to_string(peek().line) + ": Too many iterations parsing exec (possible infinite loop)");
+                break;
             }
 
-            if (peek().type == TokenType::COMMA)
-                advance();
-               }
+            // Handle named parameter: IDENTIFIER '=' expression
+            if (peek().type == TokenType::IDENTIFIER && peek(1).type == TokenType::ASSIGN) {
+                Token param = advance();              // identifier
+                expect(TokenType::ASSIGN, "Expected '=' in exec");
+                auto valueNode = parseExpression();   // parse the value as a full expression
+
+                auto paramNode = make_shared<ASTNode>(NodeType::ASSIGNMENT, param.value);
+                if (valueNode) paramNode->addChild(valueNode);
+                node->addChild(paramNode);
+            } else {
+                // Positional value (could be literal, identifier, function call, etc.)
+                // Use parseExpression to consume a valid expression/value.
+                auto valueNode = parseExpression();
+                if (valueNode) {
+                    node->addChild(valueNode);
+                } else {
+                    // Fallback: if parseExpression didn't consume anything, advance to avoid hang
+                    if (peek().type == TokenType::COMMA) {
+                        // nothing to add, will skip comma below
+                    } else if (peek().type == TokenType::END_OF_FILE || peek().type == TokenType::RPAREN) {
+                        // nothing to do
+                    } else {
+                        // Skip unexpected token to prevent infinite loop
+                        advance();
+                    }
+                }
+            }
+
+            // Skip optional comma separator between parameters
+            if (peek().type == TokenType::COMMA) advance();
+        }
 
         expect(TokenType::RPAREN, "Expected ')' after exec");
 
