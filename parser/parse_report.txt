@@ -1,0 +1,146 @@
+C-ACCEL SYNTAX PARSE REPORT
+===========================
+Source File: ../SampleCode.txt
+Total Tokens: 1442
+
+ERRORS:
+  Line 12: Expected '{'
+  Line 13: Unexpected token: {
+  Line 55: Expected '{'
+  Line 56: Unexpected token: {
+  Line 91: Expected ',' in for
+  Line 91: Unexpected token: =
+  Line 91: Expected ',' in for
+  Line 91: Expected ')' after for
+  Line 91: Expected '{'
+  Line 91: Unexpected token: ,
+  Line 91: Unexpected token: ,
+  Line 91: Unexpected token: )
+  Line 92: Unexpected token: {
+  Line 104: Expected '{'
+  Line 105: Unexpected token: {
+  Line 147: Expected ',' in for
+  Line 147: Unexpected token: =
+  Line 147: Expected ',' in for
+  Line 147: Expected ')' after for
+  Line 147: Expected '{'
+  Line 147: Unexpected token: ,
+  Line 147: Unexpected token: ,
+  Line 147: Unexpected token: )
+  Line 148: Unexpected token: {
+  Line 160: Expected '{'
+  Line 161: Unexpected token: {
+  Line 203: Expected '{'
+  Line 204: Unexpected token: {
+  Line 206: Expected ',' in for
+  Line 206: Unexpected token: =
+  Line 206: Expected ',' in for
+  Line 206: Expected ')' after for
+  Line 206: Expected '{'
+  Line 206: Unexpected token: ,
+  Line 206: Unexpected token: ,
+  Line 206: Unexpected token: )
+  Line 207: Unexpected token: {
+  Line 211: Expected ',' in for
+  Line 211: Unexpected token: =
+  Line 211: Expected ',' in for
+  Line 211: Expected ')' after for
+  Line 211: Expected '{'
+  Line 211: Unexpected token: ,
+  Line 211: Unexpected token: ,
+  Line 211: Unexpected token: )
+  Line 212: Unexpected token: {
+  Line 268: Expected '{'
+  Line 269: Unexpected token: {
+  Line 275: Expected '{'
+  Line 276: Unexpected token: {
+  Line 282: Expected '{'
+  Line 283: Unexpected token: {
+  Line 296: Expected '{'
+  Line 297: Unexpected token: {
+  Line 303: Expected '{'
+  Line 304: Unexpected token: {
+  Line 309: Expected '{'
+  Line 310: Unexpected token: {
+  Line 328: Expected '{'
+  Line 329: Unexpected token: {
+  Line 344: Expected '{'
+  Line 345: Unexpected token: {
+  Line 347: Expected ',' in for
+  Line 347: Unexpected token: =
+  Line 347: Expected ',' in for
+  Line 347: Expected ')' after for
+  Line 347: Expected '{'
+  Line 347: Unexpected token: ,
+  Line 347: Unexpected token: ,
+  Line 347: Unexpected token: )
+  Line 348: Unexpected token: {
+  Line 353: Expected ',' in for
+  Line 353: Unexpected token: =
+  Line 353: Expected ',' in for
+  Line 353: Expected ')' after for
+  Line 353: Expected '{'
+  Line 353: Unexpected token: ,
+  Line 353: Unexpected token: ,
+  Line 353: Unexpected token: )
+  Line 354: Unexpected token: {
+  Line 361: Expected '{'
+  Line 362: Unexpected token: {
+  Line 373: Expected '{'
+  Line 374: Unexpected token: {
+  Line 403: Expected '{'
+  Line 404: Unexpected token: {
+  Line 406: Expected ',' in for
+  Line 406: Unexpected token: =
+  Line 406: Expected ',' in for
+  Line 406: Expected ')' after for
+  Line 406: Expected '{'
+  Line 406: Unexpected token: ,
+  Line 406: Unexpected token: ,
+  Line 406: Unexpected token: )
+  Line 407: Unexpected token: {
+  Line 450: Expected '{'
+  Line 451: Unexpected token: {
+
+
+====================================
+PARSE TREE STATISTICS
+====================================
+Total AST Nodes: 782
+Imports: 2
+Exec Directives: 3
+Functions: 18
+Classes: 3
+Assignments: 97
+For Loops: 9
+While Loops: 2
+If Statements: 4
+Function Calls: 55
+Binary Operations: 30
+Unary Operations: 15
+====================================
+
+
+KEY CONSTRUCTS FOUND:
+====================
+  Function: p (line 12)
+  Function: a (line 55)
+  Function: v (line 104)
+  Function: o (line 160)
+  Function: c (line 203)
+  Class: Person (line 260)
+  Function: i (line 268)
+  Function: d (line 275)
+  Function: s (line 282)
+  Class: Rectangle (line 288)
+  Function: i (line 296)
+  Function: c (line 303)
+  Function: d [Type] (line 309)
+  Class: DataContainer [Type] (line 320)
+  Function: i (line 328)
+  Function: s (line 344)
+  Function: a (line 361)
+  Function: o (line 373)
+  Function: r (line 403)
+  Function: e (line 450)
+  Function: Main [Main] (line 495)

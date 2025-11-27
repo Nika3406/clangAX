@@ -1,0 +1,805 @@
+C-ACCEL PARSE TREE
+==================
+
+PROGRAM: program
+  IMPORT: Sample (line 1)
+  IMPORT: MLCore (line 2)
+  EXEC: exec (line 4)
+    ASSIGNMENT: gpu
+      LITERAL: 0 (line 4)
+    LITERAL: 0.55 (line 4)
+  EXEC: exec (line 5)
+    ASSIGNMENT: cpu
+      LITERAL: 1 (line 5)
+    LITERAL: 1.0 (line 5)
+  EXEC: exec (line 6)
+    ASSIGNMENT: threads
+      LITERAL: 4 (line 6)
+    LITERAL: 0.75 (line 6)
+  FUNCTION: p (line 12)
+    BLOCK: block
+      IDENTIFIER: rimitives (line 12)
+      LITERAL:  (line 12)
+      LITERAL: error
+      ASSIGNMENT: int_positive
+        LITERAL: 42 (line 15)
+      ASSIGNMENT: int_negative
+        LITERAL: -100 (line 16)
+      ASSIGNMENT: int_zero
+        LITERAL: 0 (line 17)
+      ASSIGNMENT: int_large
+        LITERAL: 999999 (line 18)
+      ASSIGNMENT: float_decimal
+        LITERAL: 3.14159 (line 21)
+      ASSIGNMENT: float_scientific
+        LITERAL: 2.5 (line 22)
+      ASSIGNMENT: float_small
+        LITERAL: 0.001 (line 23)
+      ASSIGNMENT: float_negative
+        LITERAL: -99.99 (line 24)
+      ASSIGNMENT: str_simple
+        LITERAL: Hello World (line 27)
+      ASSIGNMENT: str_with_space
+        LITERAL: This is a test (line 28)
+      ASSIGNMENT: str_special
+        LITERAL: Special chars: @#$% (line 29)
+      ASSIGNMENT: str_empty
+        LITERAL (line 30)
+      ASSIGNMENT: str_path
+        LITERAL: /usr/local/bin (line 31)
+      ASSIGNMENT: char_letter
+        LITERAL: A (line 34)
+      ASSIGNMENT: char_digit
+        LITERAL: 5 (line 35)
+      ASSIGNMENT: char_symbol
+        LITERAL: @ (line 36)
+      ASSIGNMENT: char_space
+        LITERAL:   (line 37)
+      ASSIGNMENT: flag_true
+        LITERAL: true (line 40)
+      ASSIGNMENT: flag_false
+        LITERAL: false (line 41)
+      ASSIGNMENT: is_active
+        LITERAL: true (line 42)
+      ASSIGNMENT: null_var
+        LITERAL: null (line 45)
+      PRINT: print (line 47)
+        LITERAL: Primitive types initialized (line 47)
+  FUNCTION: a (line 55)
+    BLOCK: block
+      IDENTIFIER: rrayExamples (line 55)
+      LITERAL:  (line 55)
+      LITERAL: error
+      ASSIGNMENT: numbers
+        ARRAY_LITERAL: array
+          LITERAL: 1 (line 58)
+          LITERAL: 2 (line 58)
+          LITERAL: 3 (line 58)
+          LITERAL: 4 (line 58)
+          LITERAL: 5 (line 58)
+      ASSIGNMENT: floats
+        ARRAY_LITERAL: array
+          LITERAL: 1.1 (line 59)
+          LITERAL: 2.2 (line 59)
+          LITERAL: 3.3 (line 59)
+          LITERAL: 4.4 (line 59)
+          LITERAL: 5.5 (line 59)
+      ASSIGNMENT: strings
+        ARRAY_LITERAL: array
+          LITERAL: alpha (line 60)
+          LITERAL: beta (line 60)
+          LITERAL: gamma (line 60)
+          LITERAL: delta (line 60)
+      ASSIGNMENT: mixed
+        ARRAY_LITERAL: array
+          LITERAL: 1 (line 61)
+          LITERAL: 2.5 (line 61)
+          LITERAL: text (line 61)
+          LITERAL: true (line 61)
+      ASSIGNMENT: matrix_2x2
+        ARRAY_LITERAL: array
+          ARRAY_LITERAL: array
+            LITERAL: 1 (line 65)
+            LITERAL: 2 (line 65)
+          ARRAY_LITERAL: array
+            LITERAL: 3 (line 66)
+            LITERAL: 4 (line 66)
+      ASSIGNMENT: matrix_3x3
+        ARRAY_LITERAL: array
+          ARRAY_LITERAL: array
+            LITERAL: 1.0 (line 70)
+            LITERAL: 2.0 (line 70)
+            LITERAL: 3.0 (line 70)
+          ARRAY_LITERAL: array
+            LITERAL: 4.0 (line 71)
+            LITERAL: 5.0 (line 71)
+            LITERAL: 6.0 (line 71)
+          ARRAY_LITERAL: array
+            LITERAL: 7.0 (line 72)
+            LITERAL: 8.0 (line 72)
+            LITERAL: 9.0 (line 72)
+      ASSIGNMENT: empty_arr
+        ARRAY_LITERAL: array
+      ASSIGNMENT: nested
+        ARRAY_LITERAL: array
+          ARRAY_LITERAL: array
+            LITERAL: 1 (line 80)
+            LITERAL: 2 (line 80)
+            LITERAL: 3 (line 80)
+          ARRAY_LITERAL: array
+            LITERAL: 4 (line 81)
+            LITERAL: 5 (line 81)
+            LITERAL: 6 (line 81)
+          ARRAY_LITERAL: array
+            LITERAL: 7 (line 82)
+            LITERAL: 8 (line 82)
+            LITERAL: 9 (line 82)
+      ASSIGNMENT: first
+        ARRAY_ACCESS: []
+          IDENTIFIER: numbers (line 86)
+          LITERAL: 0 (line 86)
+      ASSIGNMENT: last
+        ARRAY_ACCESS: []
+          IDENTIFIER: numbers (line 87)
+          LITERAL: 4 (line 87)
+      ASSIGNMENT: numbers [operator==]
+        LITERAL: 2 (line 88)
+        LITERAL: 99 (line 88)
+      FOR: for (line 91)
+        IDENTIFIER: idx (line 91)
+        LITERAL: error
+        LITERAL: 0 (line 91)
+        BLOCK: block
+          LITERAL: error
+          BINARY_OP: <
+            IDENTIFIER: idx (line 91)
+            FUNCTION_CALL: len
+              IDENTIFIER: numbers (line 91)
+          LITERAL: error
+          UNARY_OP: ++post
+            IDENTIFIER: idx (line 91)
+          LITERAL: error
+          LITERAL: error
+          PRINT: print (line 93)
+            ARRAY_ACCESS: []
+              IDENTIFIER: numbers (line 93)
+              IDENTIFIER: idx (line 93)
+      PRINT: print (line 96)
+        LITERAL: Array examples completed (line 96)
+  FUNCTION: v (line 104)
+    BLOCK: block
+      IDENTIFIER: ectorExamples (line 104)
+      LITERAL:  (line 104)
+      LITERAL: error
+      VECTOR_DECL: int_vec [elementType=int]
+      VECTOR_DECL: float_vec [elementType=float]
+      VECTOR_DECL: str_vec [elementType=string]
+      VECTOR_DECL: char_vec [elementType=char]
+      FUNCTION_CALL: push
+        IDENTIFIER: int_vec (line 113)
+        LITERAL: 10 (line 113)
+      FUNCTION_CALL: push
+        IDENTIFIER: int_vec (line 114)
+        LITERAL: 20 (line 114)
+      FUNCTION_CALL: push
+        IDENTIFIER: int_vec (line 115)
+        LITERAL: 30 (line 115)
+      FUNCTION_CALL: push
+        IDENTIFIER: int_vec (line 116)
+        LITERAL: 40 (line 116)
+      FUNCTION_CALL: push
+        IDENTIFIER: int_vec (line 117)
+        LITERAL: 50 (line 117)
+      FUNCTION_CALL: push
+        IDENTIFIER: float_vec (line 119)
+        LITERAL: 1.5 (line 119)
+      FUNCTION_CALL: push
+        IDENTIFIER: float_vec (line 120)
+        LITERAL: 2.5 (line 120)
+      FUNCTION_CALL: push
+        IDENTIFIER: float_vec (line 121)
+        LITERAL: 3.5 (line 121)
+      FUNCTION_CALL: push
+        IDENTIFIER: str_vec (line 123)
+        LITERAL: first (line 123)
+      FUNCTION_CALL: push
+        IDENTIFIER: str_vec (line 124)
+        LITERAL: second (line 124)
+      FUNCTION_CALL: push
+        IDENTIFIER: str_vec (line 125)
+        LITERAL: third (line 125)
+      FUNCTION_CALL: push
+        IDENTIFIER: char_vec (line 127)
+        LITERAL: X (line 127)
+      FUNCTION_CALL: push
+        IDENTIFIER: char_vec (line 128)
+        LITERAL: Y (line 128)
+      FUNCTION_CALL: push
+        IDENTIFIER: char_vec (line 129)
+        LITERAL: Z (line 129)
+      ASSIGNMENT: first_int
+        ARRAY_ACCESS: []
+          IDENTIFIER: int_vec (line 132)
+          LITERAL: 0 (line 132)
+      ASSIGNMENT: second_float
+        ARRAY_ACCESS: []
+          IDENTIFIER: float_vec (line 133)
+          LITERAL: 1 (line 133)
+      ASSIGNMENT: int_vec [operator==]
+        LITERAL: 0 (line 136)
+        LITERAL: 100 (line 136)
+      ASSIGNMENT: float_vec [operator==]
+        LITERAL: 1 (line 137)
+        LITERAL: 9.99 (line 137)
+      FUNCTION_CALL: pop
+        IDENTIFIER: int_vec (line 140)
+      FUNCTION_CALL: pop
+        IDENTIFIER: str_vec (line 141)
+      ASSIGNMENT: vec_size
+        FUNCTION_CALL: size
+          IDENTIFIER: int_vec (line 144)
+      FOR: for (line 147)
+        IDENTIFIER: i (line 147)
+        LITERAL: error
+        LITERAL: 0 (line 147)
+        BLOCK: block
+          LITERAL: error
+          BINARY_OP: <
+            IDENTIFIER: i (line 147)
+            FUNCTION_CALL: size
+              IDENTIFIER: int_vec (line 147)
+          LITERAL: error
+          UNARY_OP: ++post
+            IDENTIFIER: i (line 147)
+          LITERAL: error
+          LITERAL: error
+          PRINT: print (line 149)
+            ARRAY_ACCESS: []
+              IDENTIFIER: int_vec (line 149)
+              IDENTIFIER: i (line 149)
+      PRINT: print (line 152)
+        LITERAL: Vector examples completed (line 152)
+  FUNCTION: o (line 160)
+    BLOCK: block
+      IDENTIFIER: peratorExamples (line 160)
+      LITERAL:  (line 160)
+      LITERAL: error
+      ASSIGNMENT: add_result
+        BINARY_OP: +
+          LITERAL: 10 (line 163)
+          LITERAL: 5 (line 163)
+      ASSIGNMENT: sub_result
+        BINARY_OP: -
+          LITERAL: 10 (line 164)
+          LITERAL: 5 (line 164)
+      ASSIGNMENT: mul_result
+        BINARY_OP: *
+          LITERAL: 10 (line 165)
+          LITERAL: 5 (line 165)
+      ASSIGNMENT: div_result
+        BINARY_OP: /
+          LITERAL: 10 (line 166)
+          LITERAL: 5 (line 166)
+      ASSIGNMENT: mod_result
+        BINARY_OP: %
+          LITERAL: 10 (line 167)
+          LITERAL: 3 (line 167)
+      ASSIGNMENT: is_equal
+        BINARY_OP: ==
+          LITERAL: 5 (line 170)
+          LITERAL: 5 (line 170)
+      ASSIGNMENT: not_equal
+        BINARY_OP: !=
+          LITERAL: 5 (line 171)
+          LITERAL: 3 (line 171)
+      ASSIGNMENT: less_than
+        BINARY_OP: <
+          LITERAL: 3 (line 172)
+          LITERAL: 5 (line 172)
+      ASSIGNMENT: greater_than
+        BINARY_OP: >
+          LITERAL: 5 (line 173)
+          LITERAL: 3 (line 173)
+      ASSIGNMENT: less_equal
+        BINARY_OP: <=
+          LITERAL: 3 (line 174)
+          LITERAL: 5 (line 174)
+      ASSIGNMENT: greater_equal
+        BINARY_OP: >=
+          LITERAL: 5 (line 175)
+          LITERAL: 3 (line 175)
+      ASSIGNMENT: and_result
+        BINARY_OP: &&
+          LITERAL: true (line 178)
+          LITERAL: true (line 178)
+      ASSIGNMENT: or_result
+        BINARY_OP: ||
+          LITERAL: true (line 179)
+          LITERAL: false (line 179)
+      ASSIGNMENT: not_result
+        UNARY_OP: !
+          LITERAL: false (line 180)
+      ASSIGNMENT: counter
+        LITERAL: 0 (line 183)
+      UNARY_OP: ++post
+        IDENTIFIER: counter (line 184)
+      UNARY_OP: ++post
+        IDENTIFIER: counter (line 185)
+      UNARY_OP: --post
+        IDENTIFIER: counter (line 186)
+      ASSIGNMENT: value
+        LITERAL: 10 (line 189)
+      ASSIGNMENT: value [operator=+=]
+        LITERAL: 5 (line 190)
+      ASSIGNMENT: value [operator=-=]
+        LITERAL: 3 (line 191)
+      ASSIGNMENT: value [operator=*=]
+        LITERAL: 2 (line 192)
+      ASSIGNMENT: value [operator=/=]
+        LITERAL: 4 (line 193)
+      PRINT: print (line 195)
+        LITERAL: Operator examples completed (line 195)
+  FUNCTION: c (line 203)
+    BLOCK: block
+      IDENTIFIER: ontrolFlow (line 203)
+      LITERAL:  (line 203)
+      LITERAL: error
+      FOR: for (line 206)
+        IDENTIFIER: i (line 206)
+        LITERAL: error
+        LITERAL: 0 (line 206)
+        BLOCK: block
+          LITERAL: error
+          BINARY_OP: <
+            IDENTIFIER: i (line 206)
+            LITERAL: 10 (line 206)
+          LITERAL: error
+          UNARY_OP: ++post
+            IDENTIFIER: i (line 206)
+          LITERAL: error
+          LITERAL: error
+          PRINT: print (line 208)
+            IDENTIFIER: i (line 208)
+      FOR: for (line 211)
+        IDENTIFIER: j (line 211)
+        LITERAL: error
+        LITERAL: 10 (line 211)
+        BLOCK: block
+          LITERAL: error
+          BINARY_OP: >
+            IDENTIFIER: j (line 211)
+            LITERAL: 0 (line 211)
+          LITERAL: error
+          UNARY_OP: --post
+            IDENTIFIER: j (line 211)
+          LITERAL: error
+          LITERAL: error
+          PRINT: print (line 213)
+            IDENTIFIER: j (line 213)
+      ASSIGNMENT: counter
+        LITERAL: 0 (line 217)
+      WHILE: while (line 218)
+        BINARY_OP: <
+          IDENTIFIER: counter (line 218)
+          LITERAL: 5 (line 218)
+        BLOCK: block
+          PRINT: print (line 220)
+            IDENTIFIER: counter (line 220)
+          UNARY_OP: ++post
+            IDENTIFIER: counter (line 221)
+      ASSIGNMENT: value
+        LITERAL: 42 (line 225)
+      IF: if (line 226)
+        BINARY_OP: >
+          IDENTIFIER: value (line 226)
+          LITERAL: 50 (line 226)
+        BLOCK: block
+          PRINT: print (line 228)
+            LITERAL: Greater than 50 (line 228)
+        BLOCK: block
+          PRINT: print (line 232)
+            LITERAL: Less than or equal to 50 (line 232)
+      ASSIGNMENT: x
+        LITERAL: 10 (line 236)
+      ASSIGNMENT: y
+        LITERAL: 20 (line 237)
+      IF: if (line 238)
+        BINARY_OP: <
+          IDENTIFIER: x (line 238)
+          IDENTIFIER: y (line 238)
+        BLOCK: block
+          IF: if (line 240)
+            BINARY_OP: >
+              IDENTIFIER: x (line 240)
+              LITERAL: 0 (line 240)
+            BLOCK: block
+              PRINT: print (line 242)
+                LITERAL: Positive and less than y (line 242)
+      FOR: for (line 247)
+        RANGE_FOR: num
+          FUNCTION_CALL: range
+            LITERAL: 0 (line 247)
+            LITERAL: 10 (line 247)
+        BLOCK: block
+          PRINT: print (line 249)
+            IDENTIFIER: num (line 249)
+      PRINT: print (line 252)
+        LITERAL: Control flow examples completed (line 252)
+  CLASS: Person (line 260)
+    OBJECT_SECTION: object
+      IDENTIFIER: name
+      IDENTIFIER: age
+      IDENTIFIER: email
+    MEMBER_SECTION: member
+      FUNCTION: i (line 268)
+        BLOCK: block
+          IDENTIFIER: nit (line 268)
+          LITERAL:  (line 268)
+          LITERAL: error
+          ASSIGNMENT: name
+            LITERAL: John Doe (line 270)
+          ASSIGNMENT: age
+            LITERAL: 30 (line 271)
+          ASSIGNMENT: email
+            LITERAL: john@example.com (line 272)
+      FUNCTION: d (line 275)
+        BLOCK: block
+          IDENTIFIER: isplayInfo (line 275)
+          LITERAL:  (line 275)
+          LITERAL: error
+          PRINT: print (line 277)
+            IDENTIFIER: name (line 277)
+          PRINT: print (line 278)
+            IDENTIFIER: age (line 278)
+          PRINT: print (line 279)
+            IDENTIFIER: email (line 279)
+      FUNCTION: s (line 282)
+        BLOCK: block
+          IDENTIFIER: etAge (line 282)
+          LITERAL:  (line 282)
+          LITERAL: error
+          ASSIGNMENT: age
+            LITERAL: 31 (line 284)
+  CLASS: Rectangle (line 288)
+    OBJECT_SECTION: object
+      IDENTIFIER: width
+      IDENTIFIER: height
+      IDENTIFIER: area
+    MEMBER_SECTION: member
+      FUNCTION: i (line 296)
+        BLOCK: block
+          IDENTIFIER: nit (line 296)
+          LITERAL:  (line 296)
+          LITERAL: error
+          ASSIGNMENT: width
+            LITERAL: 10.5 (line 298)
+          ASSIGNMENT: height
+            LITERAL: 20.5 (line 299)
+          ASSIGNMENT: area
+            LITERAL: 0.0 (line 300)
+      FUNCTION: c (line 303)
+        BLOCK: block
+          IDENTIFIER: alculateArea (line 303)
+          LITERAL:  (line 303)
+          LITERAL: error
+          ASSIGNMENT: area
+            BINARY_OP: *
+              IDENTIFIER: width (line 305)
+              IDENTIFIER: height (line 305)
+          RETURN: return (line 306)
+            IDENTIFIER: area (line 306)
+      FUNCTION: d [type=Type] (line 309)
+        BLOCK: block
+          IDENTIFIER: isplayDimensions (line 309)
+          LITERAL:  (line 309)
+          LITERAL: error
+          PRINT: print (line 311)
+            LITERAL: Width: (line 311)
+          PRINT: print (line 312)
+            IDENTIFIER: width (line 312)
+          PRINT: print (line 313)
+            LITERAL: Height: (line 313)
+          PRINT: print (line 314)
+            IDENTIFIER: height (line 314)
+          PRINT: print (line 315)
+            LITERAL: Area: (line 315)
+          PRINT: print (line 316)
+            IDENTIFIER: area (line 316)
+  CLASS: DataContainer [type=Type] (line 320)
+    OBJECT_SECTION: object
+      IDENTIFIER: values
+      IDENTIFIER: buffer
+      IDENTIFIER: metadata
+    MEMBER_SECTION: member
+      FUNCTION: i (line 328)
+        BLOCK: block
+          IDENTIFIER: nit (line 328)
+          LITERAL:  (line 328)
+          LITERAL: error
+          ASSIGNMENT: values
+            ARRAY_LITERAL: array
+              LITERAL: 5 (line 331)
+              LITERAL: 10 (line 331)
+              LITERAL: 15 (line 331)
+              LITERAL: 20 (line 331)
+              LITERAL: 25 (line 331)
+          VECTOR_DECL: buffer [elementType=float]
+          FUNCTION_CALL: push
+            IDENTIFIER: buffer (line 335)
+            LITERAL: 1.1 (line 335)
+          FUNCTION_CALL: push
+            IDENTIFIER: buffer (line 336)
+            LITERAL: 2.2 (line 336)
+          FUNCTION_CALL: push
+            IDENTIFIER: buffer (line 337)
+            LITERAL: 3.3 (line 337)
+          FUNCTION_CALL: push
+            IDENTIFIER: buffer (line 338)
+            LITERAL: 4.4 (line 338)
+          ASSIGNMENT: metadata
+            LITERAL: Container v1.0 (line 341)
+      FUNCTION: s (line 344)
+        BLOCK: block
+          IDENTIFIER: how (line 344)
+          LITERAL:  (line 344)
+          LITERAL: error
+          PRINT: print (line 346)
+            LITERAL: Values array: (line 346)
+          FOR: for (line 347)
+            IDENTIFIER: i (line 347)
+            LITERAL: error
+            LITERAL: 0 (line 347)
+            BLOCK: block
+              LITERAL: error
+              BINARY_OP: <
+                IDENTIFIER: i (line 347)
+                FUNCTION_CALL: len
+                  IDENTIFIER: values (line 347)
+              LITERAL: error
+              UNARY_OP: ++post
+                IDENTIFIER: i (line 347)
+              LITERAL: error
+              LITERAL: error
+              PRINT: print (line 349)
+                ARRAY_ACCESS: []
+                  IDENTIFIER: values (line 349)
+                  IDENTIFIER: i (line 349)
+          PRINT: print (line 352)
+            LITERAL: Buffer vector: (line 352)
+          FOR: for (line 353)
+            IDENTIFIER: j (line 353)
+            LITERAL: error
+            LITERAL: 0 (line 353)
+            BLOCK: block
+              LITERAL: error
+              BINARY_OP: <
+                IDENTIFIER: j (line 353)
+                FUNCTION_CALL: size
+                  IDENTIFIER: buffer (line 353)
+              LITERAL: error
+              UNARY_OP: ++post
+                IDENTIFIER: j (line 353)
+              LITERAL: error
+              LITERAL: error
+              PRINT: print (line 355)
+                ARRAY_ACCESS: []
+                  IDENTIFIER: buffer (line 355)
+                  IDENTIFIER: j (line 355)
+          PRINT: print (line 358)
+            IDENTIFIER: metadata (line 358)
+      FUNCTION: a (line 361)
+        BLOCK: block
+          IDENTIFIER: ddValue (line 361)
+          LITERAL:  (line 361)
+          LITERAL: error
+          ASSIGNMENT: values [operator==]
+            LITERAL: 0 (line 363)
+            LITERAL: 100 (line 363)
+          FUNCTION_CALL: push
+            IDENTIFIER: buffer (line 364)
+            LITERAL: 5.5 (line 364)
+  FUNCTION: o (line 373)
+    BLOCK: block
+      IDENTIFIER: bjectExamples (line 373)
+      LITERAL:  (line 373)
+      LITERAL: error
+      ASSIGNMENT: person
+        FUNCTION_CALL: Person
+      ASSIGNMENT: rect
+        FUNCTION_CALL: Rectangle
+      ASSIGNMENT: container
+        FUNCTION_CALL: DataContainer
+      FUNCTION_CALL: init
+        IDENTIFIER: person (line 381)
+      FUNCTION_CALL: init
+        IDENTIFIER: rect (line 382)
+      FUNCTION_CALL: init
+        IDENTIFIER: container (line 383)
+      FUNCTION_CALL: displayInfo
+        IDENTIFIER: person (line 386)
+      FUNCTION_CALL: calculateArea
+        IDENTIFIER: rect (line 387)
+      FUNCTION_CALL: displayDimensions
+        IDENTIFIER: rect (line 388)
+      FUNCTION_CALL: show
+        IDENTIFIER: container (line 389)
+      FUNCTION_CALL: setAge
+        IDENTIFIER: person (line 392)
+      FUNCTION_CALL: addValue
+        IDENTIFIER: container (line 393)
+      PRINT: print (line 395)
+        LITERAL: Object examples completed (line 395)
+  FUNCTION: r (line 403)
+    BLOCK: block
+      IDENTIFIER: eservedWordsDemo (line 403)
+      LITERAL:  (line 403)
+      LITERAL: error
+      FOR: for (line 406)
+        IDENTIFIER: i (line 406)
+        LITERAL: error
+        LITERAL: 0 (line 406)
+        BLOCK: block
+          LITERAL: error
+          BINARY_OP: <
+            IDENTIFIER: i (line 406)
+            LITERAL: 5 (line 406)
+          LITERAL: error
+          UNARY_OP: ++post
+            IDENTIFIER: i (line 406)
+          LITERAL: error
+          LITERAL: error
+          IF: if (line 408)
+            BINARY_OP: ==
+              IDENTIFIER: i (line 408)
+              LITERAL: 3 (line 408)
+            BLOCK: block
+              PRINT: print (line 410)
+                LITERAL: Found three (line 410)
+            BLOCK: block
+              PRINT: print (line 414)
+                IDENTIFIER: i (line 414)
+      ASSIGNMENT: count
+        LITERAL: 0 (line 418)
+      WHILE: while (line 419)
+        BINARY_OP: <
+          IDENTIFIER: count (line 419)
+          LITERAL: 3 (line 419)
+        BLOCK: block
+          PRINT: print (line 421)
+            IDENTIFIER: count (line 421)
+          UNARY_OP: ++post
+            IDENTIFIER: count (line 422)
+      FOR: for (line 426)
+        RANGE_FOR: val
+          FUNCTION_CALL: range
+            LITERAL: 1 (line 426)
+            LITERAL: 5 (line 426)
+        BLOCK: block
+          PRINT: print (line 428)
+            IDENTIFIER: val (line 428)
+      VECTOR_DECL: temp [elementType=int]
+      FUNCTION_CALL: push
+        IDENTIFIER: temp (line 433)
+        LITERAL: 1 (line 433)
+      FUNCTION_CALL: push
+        IDENTIFIER: temp (line 434)
+        LITERAL: 2 (line 434)
+      FUNCTION_CALL: pop
+        IDENTIFIER: temp (line 435)
+      ASSIGNMENT: size
+        FUNCTION_CALL: size
+          IDENTIFIER: temp (line 436)
+      ASSIGNMENT: arr
+        ARRAY_LITERAL: array
+          LITERAL: 1 (line 439)
+          LITERAL: 2 (line 439)
+          LITERAL: 3 (line 439)
+      ASSIGNMENT: length
+        FUNCTION_CALL: len
+          IDENTIFIER: arr (line 440)
+      PRINT: print (line 442)
+        LITERAL: Reserved words demo completed (line 442)
+  FUNCTION: e (line 450)
+    BLOCK: block
+      IDENTIFIER: dgeCases (line 450)
+      LITERAL:  (line 450)
+      LITERAL: error
+      ASSIGNMENT: large_int
+        LITERAL: 123456789 (line 453)
+      ASSIGNMENT: large_float
+        LITERAL: 987654.321 (line 454)
+      ASSIGNMENT: a
+        LITERAL: 1 (line 457)
+      ASSIGNMENT: b
+        LITERAL: 2 (line 458)
+      ASSIGNMENT: c
+        LITERAL: 3 (line 459)
+      ASSIGNMENT: result
+        BINARY_OP: -
+          BINARY_OP: *
+            BINARY_OP: +
+              LITERAL: 10 (line 462)
+              LITERAL: 5 (line 462)
+            LITERAL: 2 (line 462)
+          LITERAL: 3 (line 462)
+      ASSIGNMENT: single
+        ARRAY_LITERAL: array
+          LITERAL: 42 (line 465)
+      ASSIGNMENT: empty
+        LITERAL (line 468)
+      ASSIGNMENT: value
+        LITERAL: 3.14 (line 471)
+      VECTOR_DECL: nums [elementType=float]
+      FUNCTION_CALL: push
+        IDENTIFIER: nums (line 473)
+        IDENTIFIER: value (line 473)
+      ASSIGNMENT: size
+        FUNCTION_CALL: size
+          IDENTIFIER: nums (line 474)
+      ASSIGNMENT: complex
+        ARRAY_LITERAL: array
+          ARRAY_LITERAL: array
+            LITERAL: 1 (line 477)
+            LITERAL: 2 (line 477)
+          ARRAY_LITERAL: array
+            LITERAL: 3 (line 477)
+            LITERAL: 4 (line 477)
+          ARRAY_LITERAL: array
+            LITERAL: 5 (line 477)
+            LITERAL: 6 (line 477)
+      ASSIGNMENT: x
+        LITERAL: 10 (line 480)
+      UNARY_OP: ++post
+        IDENTIFIER: x (line 481)
+      UNARY_OP: --post
+        IDENTIFIER: x (line 482)
+      ASSIGNMENT: x [operator=+=]
+        LITERAL: 5 (line 483)
+      ASSIGNMENT: x [operator=-=]
+        LITERAL: 2 (line 484)
+      ASSIGNMENT: x [operator=*=]
+        LITERAL: 3 (line 485)
+      PRINT: print (line 487)
+        LITERAL: Edge cases completed (line 487)
+  FUNCTION: Main [type=Main] (line 495)
+    BLOCK: block
+      PRINT: print (line 497)
+        LITERAL: ======================================== (line 497)
+      PRINT: print (line 498)
+        LITERAL: C-Accel Comprehensive Test Suite (line 498)
+      PRINT: print (line 499)
+        LITERAL: ======================================== (line 499)
+      FUNCTION_CALL: primitives
+      FUNCTION_CALL: arrayExamples
+      FUNCTION_CALL: vectorExamples
+      FUNCTION_CALL: operatorExamples
+      FUNCTION_CALL: controlFlow
+      FUNCTION_CALL: objectExamples
+      FUNCTION_CALL: reservedWordsDemo
+      FUNCTION_CALL: edgeCases
+      PRINT: print (line 511)
+        LITERAL: ======================================== (line 511)
+      PRINT: print (line 512)
+        LITERAL: All tests completed successfully! (line 512)
+      PRINT: print (line 513)
+        LITERAL: ======================================== (line 513)
+
+
+
+====================================
+PARSE TREE STATISTICS
+====================================
+Total AST Nodes: 782
+Imports: 2
+Exec Directives: 3
+Functions: 18
+Classes: 3
+Assignments: 97
+For Loops: 9
+While Loops: 2
+If Statements: 4
+Function Calls: 55
+Binary Operations: 30
+Unary Operations: 15
+====================================
+
