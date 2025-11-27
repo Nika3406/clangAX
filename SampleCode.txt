@@ -9,7 +9,7 @@ exec(threads=4, 0.75)
 // PRIMITIVE DATA TYPES
 // ============================
 
-func() = 'primitives'
+func() = "primitives"
 {
     // Integer literals
     int_positive = 42
@@ -31,10 +31,10 @@ func() = 'primitives'
     str_path = "/usr/local/bin"
 
     // Character literals
-    char_letter = 'A'
-    char_digit = '5'
-    char_symbol = '@'
-    char_space = ' '
+    char_letter = "A"
+    char_digit = "5"
+    char_symbol = "@"
+    char_space = " "
 
     // Boolean literals
     flag_true = true
@@ -52,7 +52,7 @@ func() = 'primitives'
 // ARRAY DEMONSTRATIONS
 // ============================
 
-func() = 'arrayExamples'
+func() = "arrayExamples"
 {
     // Simple arrays
     numbers = [1, 2, 3, 4, 5]
@@ -101,7 +101,7 @@ func() = 'arrayExamples'
 // VECTOR DEMONSTRATIONS
 // ============================
 
-func() = 'vectorExamples'
+func() = "vectorExamples"
 {
     // Vector declarations
     vector<int> int_vec
@@ -124,9 +124,9 @@ func() = 'vectorExamples'
     str_vec.push("second")
     str_vec.push("third")
 
-    char_vec.push('X')
-    char_vec.push('Y')
-    char_vec.push('Z')
+    char_vec.push("X")
+    char_vec.push("Y")
+    char_vec.push("Z")
 
     // Access vector elements
     first_int = int_vec[0]
@@ -157,7 +157,7 @@ func() = 'vectorExamples'
 // OPERATOR DEMONSTRATIONS
 // ============================
 
-func() = 'operatorExamples'
+func() = "operatorExamples"
 {
     // Arithmetic operators
     add_result = 10 + 5
@@ -200,7 +200,7 @@ func() = 'operatorExamples'
 // CONTROL FLOW DEMONSTRATIONS
 // ============================
 
-func() = 'controlFlow'
+func() = "controlFlow"
 {
     // For loops
     for (i = 0, i < 10, i++)
@@ -265,21 +265,21 @@ object:
     email
 
 member:
-    func() = 'init'
+    func() = "init"
     {
         name = "John Doe"
         age = 30
         email = "john@example.com"
     }
 
-    func() = 'displayInfo'
+    func() = "displayInfo"
     {
         print(name)
         print(age)
         print(email)
     }
 
-    func() = 'setAge'
+    func() = "setAge"
     {
         age = 31
     }
@@ -293,20 +293,20 @@ object:
     area
 
 member:
-    func() = 'init'
+    func() = "init"
     {
         width = 10.5
         height = 20.5
         area = 0.0
     }
 
-    func() = 'calculateArea'
+    func() = "calculateArea"
     {
         area = width * height
         return area
     }
 
-    func(Type) = 'displayDimensions'
+    func(Type) = "displayDimensions"
     {
         print("Width:")
         print(width)
@@ -325,7 +325,7 @@ object:
     metadata
 
 member:
-    func() = 'init'
+    func() = "init"
     {
         // Member array
         values = [5, 10, 15, 20, 25]
@@ -341,7 +341,7 @@ member:
         metadata = "Container v1.0"
     }
 
-    func() = 'show'
+    func() = "show"
     {
         print("Values array:")
         for (i = 0, i < len(values), i++)
@@ -358,7 +358,7 @@ member:
         print(metadata)
     }
 
-    func() = 'addValue'
+    func() = "addValue"
     {
         values[0] = 100
         buffer.push(5.5)
@@ -370,7 +370,7 @@ member:
 // FUNCTION CALLS & OBJECTS
 // ============================
 
-func() = 'objectExamples'
+func() = "objectExamples"
 {
     // Create objects (constructor calls)
     person = Person()
@@ -400,7 +400,7 @@ func() = 'objectExamples'
 // RESERVED WORDS USAGE
 // ============================
 
-func() = 'reservedWordsDemo'
+func() = "reservedWordsDemo"
 {
     // Using various reserved words
     for (i = 0, i < 5, i++)
@@ -447,7 +447,7 @@ func() = 'reservedWordsDemo'
 // EDGE CASES & SPECIAL SCENARIOS
 // ============================
 
-func() = 'edgeCases'
+func() = "edgeCases"
 {
     // Very long numbers
     large_int = 123456789

@@ -16,11 +16,8 @@ PROGRAM: program
     ASSIGNMENT: threads
       LITERAL: 4 (line 6)
     LITERAL: 0.75 (line 6)
-  FUNCTION: p (line 12)
+  FUNCTION: primitives (line 12)
     BLOCK: block
-      IDENTIFIER: rimitives (line 12)
-      LITERAL:  (line 12)
-      LITERAL: error
       ASSIGNMENT: int_positive
         LITERAL: 42 (line 15)
       ASSIGNMENT: int_negative
@@ -65,11 +62,8 @@ PROGRAM: program
         LITERAL: null (line 45)
       PRINT: print (line 47)
         LITERAL: Primitive types initialized (line 47)
-  FUNCTION: a (line 55)
+  FUNCTION: arrayExamples (line 55)
     BLOCK: block
-      IDENTIFIER: rrayExamples (line 55)
-      LITERAL:  (line 55)
-      LITERAL: error
       ASSIGNMENT: numbers
         ARRAY_LITERAL: array
           LITERAL: 1 (line 58)
@@ -166,11 +160,8 @@ PROGRAM: program
               IDENTIFIER: idx (line 93)
       PRINT: print (line 96)
         LITERAL: Array examples completed (line 96)
-  FUNCTION: v (line 104)
+  FUNCTION: vectorExamples (line 104)
     BLOCK: block
-      IDENTIFIER: ectorExamples (line 104)
-      LITERAL:  (line 104)
-      LITERAL: error
       VECTOR_DECL: int_vec [elementType=int]
       VECTOR_DECL: float_vec [elementType=float]
       VECTOR_DECL: str_vec [elementType=string]
@@ -259,11 +250,8 @@ PROGRAM: program
               IDENTIFIER: i (line 149)
       PRINT: print (line 152)
         LITERAL: Vector examples completed (line 152)
-  FUNCTION: o (line 160)
+  FUNCTION: operatorExamples (line 160)
     BLOCK: block
-      IDENTIFIER: peratorExamples (line 160)
-      LITERAL:  (line 160)
-      LITERAL: error
       ASSIGNMENT: add_result
         BINARY_OP: +
           LITERAL: 10 (line 163)
@@ -339,11 +327,8 @@ PROGRAM: program
         LITERAL: 4 (line 193)
       PRINT: print (line 195)
         LITERAL: Operator examples completed (line 195)
-  FUNCTION: c (line 203)
+  FUNCTION: controlFlow (line 203)
     BLOCK: block
-      IDENTIFIER: ontrolFlow (line 203)
-      LITERAL:  (line 203)
-      LITERAL: error
       FOR: for (line 206)
         IDENTIFIER: i (line 206)
         LITERAL: error
@@ -431,33 +416,24 @@ PROGRAM: program
       IDENTIFIER: age
       IDENTIFIER: email
     MEMBER_SECTION: member
-      FUNCTION: i (line 268)
+      FUNCTION: init (line 268)
         BLOCK: block
-          IDENTIFIER: nit (line 268)
-          LITERAL:  (line 268)
-          LITERAL: error
           ASSIGNMENT: name
             LITERAL: John Doe (line 270)
           ASSIGNMENT: age
             LITERAL: 30 (line 271)
           ASSIGNMENT: email
             LITERAL: john@example.com (line 272)
-      FUNCTION: d (line 275)
+      FUNCTION: displayInfo (line 275)
         BLOCK: block
-          IDENTIFIER: isplayInfo (line 275)
-          LITERAL:  (line 275)
-          LITERAL: error
           PRINT: print (line 277)
             IDENTIFIER: name (line 277)
           PRINT: print (line 278)
             IDENTIFIER: age (line 278)
           PRINT: print (line 279)
             IDENTIFIER: email (line 279)
-      FUNCTION: s (line 282)
+      FUNCTION: setAge (line 282)
         BLOCK: block
-          IDENTIFIER: etAge (line 282)
-          LITERAL:  (line 282)
-          LITERAL: error
           ASSIGNMENT: age
             LITERAL: 31 (line 284)
   CLASS: Rectangle (line 288)
@@ -466,33 +442,24 @@ PROGRAM: program
       IDENTIFIER: height
       IDENTIFIER: area
     MEMBER_SECTION: member
-      FUNCTION: i (line 296)
+      FUNCTION: init (line 296)
         BLOCK: block
-          IDENTIFIER: nit (line 296)
-          LITERAL:  (line 296)
-          LITERAL: error
           ASSIGNMENT: width
             LITERAL: 10.5 (line 298)
           ASSIGNMENT: height
             LITERAL: 20.5 (line 299)
           ASSIGNMENT: area
             LITERAL: 0.0 (line 300)
-      FUNCTION: c (line 303)
+      FUNCTION: calculateArea (line 303)
         BLOCK: block
-          IDENTIFIER: alculateArea (line 303)
-          LITERAL:  (line 303)
-          LITERAL: error
           ASSIGNMENT: area
             BINARY_OP: *
               IDENTIFIER: width (line 305)
               IDENTIFIER: height (line 305)
           RETURN: return (line 306)
             IDENTIFIER: area (line 306)
-      FUNCTION: d [type=Type] (line 309)
+      FUNCTION: displayDimensions [type=Type] (line 309)
         BLOCK: block
-          IDENTIFIER: isplayDimensions (line 309)
-          LITERAL:  (line 309)
-          LITERAL: error
           PRINT: print (line 311)
             LITERAL: Width: (line 311)
           PRINT: print (line 312)
@@ -511,11 +478,8 @@ PROGRAM: program
       IDENTIFIER: buffer
       IDENTIFIER: metadata
     MEMBER_SECTION: member
-      FUNCTION: i (line 328)
+      FUNCTION: init (line 328)
         BLOCK: block
-          IDENTIFIER: nit (line 328)
-          LITERAL:  (line 328)
-          LITERAL: error
           ASSIGNMENT: values
             ARRAY_LITERAL: array
               LITERAL: 5 (line 331)
@@ -538,11 +502,8 @@ PROGRAM: program
             LITERAL: 4.4 (line 338)
           ASSIGNMENT: metadata
             LITERAL: Container v1.0 (line 341)
-      FUNCTION: s (line 344)
+      FUNCTION: show (line 344)
         BLOCK: block
-          IDENTIFIER: how (line 344)
-          LITERAL:  (line 344)
-          LITERAL: error
           PRINT: print (line 346)
             LITERAL: Values array: (line 346)
           FOR: for (line 347)
@@ -587,22 +548,16 @@ PROGRAM: program
                   IDENTIFIER: j (line 355)
           PRINT: print (line 358)
             IDENTIFIER: metadata (line 358)
-      FUNCTION: a (line 361)
+      FUNCTION: addValue (line 361)
         BLOCK: block
-          IDENTIFIER: ddValue (line 361)
-          LITERAL:  (line 361)
-          LITERAL: error
           ASSIGNMENT: values [operator==]
             LITERAL: 0 (line 363)
             LITERAL: 100 (line 363)
           FUNCTION_CALL: push
             IDENTIFIER: buffer (line 364)
             LITERAL: 5.5 (line 364)
-  FUNCTION: o (line 373)
+  FUNCTION: objectExamples (line 373)
     BLOCK: block
-      IDENTIFIER: bjectExamples (line 373)
-      LITERAL:  (line 373)
-      LITERAL: error
       ASSIGNMENT: person
         FUNCTION_CALL: Person
       ASSIGNMENT: rect
@@ -629,11 +584,8 @@ PROGRAM: program
         IDENTIFIER: container (line 393)
       PRINT: print (line 395)
         LITERAL: Object examples completed (line 395)
-  FUNCTION: r (line 403)
+  FUNCTION: reservedWordsDemo (line 403)
     BLOCK: block
-      IDENTIFIER: eservedWordsDemo (line 403)
-      LITERAL:  (line 403)
-      LITERAL: error
       FOR: for (line 406)
         IDENTIFIER: i (line 406)
         LITERAL: error
@@ -699,11 +651,8 @@ PROGRAM: program
           IDENTIFIER: arr (line 440)
       PRINT: print (line 442)
         LITERAL: Reserved words demo completed (line 442)
-  FUNCTION: e (line 450)
+  FUNCTION: edgeCases (line 450)
     BLOCK: block
-      IDENTIFIER: dgeCases (line 450)
-      LITERAL:  (line 450)
-      LITERAL: error
       ASSIGNMENT: large_int
         LITERAL: 123456789 (line 453)
       ASSIGNMENT: large_float
@@ -789,7 +738,7 @@ PROGRAM: program
 ====================================
 PARSE TREE STATISTICS
 ====================================
-Total AST Nodes: 782
+Total AST Nodes: 731
 Imports: 2
 Exec Directives: 3
 Functions: 18

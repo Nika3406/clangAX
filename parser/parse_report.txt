@@ -1,13 +1,9 @@
 C-ACCEL SYNTAX PARSE REPORT
 ===========================
 Source File: ../SampleCode.txt
-Total Tokens: 1442
+Total Tokens: 1408
 
 ERRORS:
-  Line 12: Expected '{'
-  Line 13: Unexpected token: {
-  Line 55: Expected '{'
-  Line 56: Unexpected token: {
   Line 91: Expected ',' in for
   Line 91: Unexpected token: =
   Line 91: Expected ',' in for
@@ -17,8 +13,6 @@ ERRORS:
   Line 91: Unexpected token: ,
   Line 91: Unexpected token: )
   Line 92: Unexpected token: {
-  Line 104: Expected '{'
-  Line 105: Unexpected token: {
   Line 147: Expected ',' in for
   Line 147: Unexpected token: =
   Line 147: Expected ',' in for
@@ -28,10 +22,6 @@ ERRORS:
   Line 147: Unexpected token: ,
   Line 147: Unexpected token: )
   Line 148: Unexpected token: {
-  Line 160: Expected '{'
-  Line 161: Unexpected token: {
-  Line 203: Expected '{'
-  Line 204: Unexpected token: {
   Line 206: Expected ',' in for
   Line 206: Unexpected token: =
   Line 206: Expected ',' in for
@@ -50,22 +40,6 @@ ERRORS:
   Line 211: Unexpected token: ,
   Line 211: Unexpected token: )
   Line 212: Unexpected token: {
-  Line 268: Expected '{'
-  Line 269: Unexpected token: {
-  Line 275: Expected '{'
-  Line 276: Unexpected token: {
-  Line 282: Expected '{'
-  Line 283: Unexpected token: {
-  Line 296: Expected '{'
-  Line 297: Unexpected token: {
-  Line 303: Expected '{'
-  Line 304: Unexpected token: {
-  Line 309: Expected '{'
-  Line 310: Unexpected token: {
-  Line 328: Expected '{'
-  Line 329: Unexpected token: {
-  Line 344: Expected '{'
-  Line 345: Unexpected token: {
   Line 347: Expected ',' in for
   Line 347: Unexpected token: =
   Line 347: Expected ',' in for
@@ -84,12 +58,6 @@ ERRORS:
   Line 353: Unexpected token: ,
   Line 353: Unexpected token: )
   Line 354: Unexpected token: {
-  Line 361: Expected '{'
-  Line 362: Unexpected token: {
-  Line 373: Expected '{'
-  Line 374: Unexpected token: {
-  Line 403: Expected '{'
-  Line 404: Unexpected token: {
   Line 406: Expected ',' in for
   Line 406: Unexpected token: =
   Line 406: Expected ',' in for
@@ -99,14 +67,12 @@ ERRORS:
   Line 406: Unexpected token: ,
   Line 406: Unexpected token: )
   Line 407: Unexpected token: {
-  Line 450: Expected '{'
-  Line 451: Unexpected token: {
 
 
 ====================================
 PARSE TREE STATISTICS
 ====================================
-Total AST Nodes: 782
+Total AST Nodes: 731
 Imports: 2
 Exec Directives: 3
 Functions: 18
@@ -123,24 +89,24 @@ Unary Operations: 15
 
 KEY CONSTRUCTS FOUND:
 ====================
-  Function: p (line 12)
-  Function: a (line 55)
-  Function: v (line 104)
-  Function: o (line 160)
-  Function: c (line 203)
+  Function: primitives (line 12)
+  Function: arrayExamples (line 55)
+  Function: vectorExamples (line 104)
+  Function: operatorExamples (line 160)
+  Function: controlFlow (line 203)
   Class: Person (line 260)
-  Function: i (line 268)
-  Function: d (line 275)
-  Function: s (line 282)
+  Function: init (line 268)
+  Function: displayInfo (line 275)
+  Function: setAge (line 282)
   Class: Rectangle (line 288)
-  Function: i (line 296)
-  Function: c (line 303)
-  Function: d [Type] (line 309)
+  Function: init (line 296)
+  Function: calculateArea (line 303)
+  Function: displayDimensions [Type] (line 309)
   Class: DataContainer [Type] (line 320)
-  Function: i (line 328)
-  Function: s (line 344)
-  Function: a (line 361)
-  Function: o (line 373)
-  Function: r (line 403)
-  Function: e (line 450)
+  Function: init (line 328)
+  Function: show (line 344)
+  Function: addValue (line 361)
+  Function: objectExamples (line 373)
+  Function: reservedWordsDemo (line 403)
+  Function: edgeCases (line 450)
   Function: Main [Main] (line 495)
