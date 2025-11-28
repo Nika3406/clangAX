@@ -140,20 +140,15 @@ PROGRAM: program
         LITERAL: 2 (line 88)
         LITERAL: 99 (line 88)
       FOR: for (line 91)
-        IDENTIFIER: idx (line 91)
-        LITERAL: error
-        LITERAL: 0 (line 91)
+        ASSIGNMENT: idx
+          LITERAL: 0 (line 91)
+        BINARY_OP: <
+          IDENTIFIER: idx (line 91)
+          FUNCTION_CALL: len
+            IDENTIFIER: numbers (line 91)
+        UNARY_OP: ++post
+          IDENTIFIER: idx (line 91)
         BLOCK: block
-          LITERAL: error
-          BINARY_OP: <
-            IDENTIFIER: idx (line 91)
-            FUNCTION_CALL: len
-              IDENTIFIER: numbers (line 91)
-          LITERAL: error
-          UNARY_OP: ++post
-            IDENTIFIER: idx (line 91)
-          LITERAL: error
-          LITERAL: error
           PRINT: print (line 93)
             ARRAY_ACCESS: []
               IDENTIFIER: numbers (line 93)
@@ -230,20 +225,15 @@ PROGRAM: program
         FUNCTION_CALL: size
           IDENTIFIER: int_vec (line 144)
       FOR: for (line 147)
-        IDENTIFIER: i (line 147)
-        LITERAL: error
-        LITERAL: 0 (line 147)
+        ASSIGNMENT: i
+          LITERAL: 0 (line 147)
+        BINARY_OP: <
+          IDENTIFIER: i (line 147)
+          FUNCTION_CALL: size
+            IDENTIFIER: int_vec (line 147)
+        UNARY_OP: ++post
+          IDENTIFIER: i (line 147)
         BLOCK: block
-          LITERAL: error
-          BINARY_OP: <
-            IDENTIFIER: i (line 147)
-            FUNCTION_CALL: size
-              IDENTIFIER: int_vec (line 147)
-          LITERAL: error
-          UNARY_OP: ++post
-            IDENTIFIER: i (line 147)
-          LITERAL: error
-          LITERAL: error
           PRINT: print (line 149)
             ARRAY_ACCESS: []
               IDENTIFIER: int_vec (line 149)
@@ -330,35 +320,25 @@ PROGRAM: program
   FUNCTION: controlFlow (line 203)
     BLOCK: block
       FOR: for (line 206)
-        IDENTIFIER: i (line 206)
-        LITERAL: error
-        LITERAL: 0 (line 206)
+        ASSIGNMENT: i
+          LITERAL: 0 (line 206)
+        BINARY_OP: <
+          IDENTIFIER: i (line 206)
+          LITERAL: 10 (line 206)
+        UNARY_OP: ++post
+          IDENTIFIER: i (line 206)
         BLOCK: block
-          LITERAL: error
-          BINARY_OP: <
-            IDENTIFIER: i (line 206)
-            LITERAL: 10 (line 206)
-          LITERAL: error
-          UNARY_OP: ++post
-            IDENTIFIER: i (line 206)
-          LITERAL: error
-          LITERAL: error
           PRINT: print (line 208)
             IDENTIFIER: i (line 208)
       FOR: for (line 211)
-        IDENTIFIER: j (line 211)
-        LITERAL: error
-        LITERAL: 10 (line 211)
+        ASSIGNMENT: j
+          LITERAL: 10 (line 211)
+        BINARY_OP: >
+          IDENTIFIER: j (line 211)
+          LITERAL: 0 (line 211)
+        UNARY_OP: --post
+          IDENTIFIER: j (line 211)
         BLOCK: block
-          LITERAL: error
-          BINARY_OP: >
-            IDENTIFIER: j (line 211)
-            LITERAL: 0 (line 211)
-          LITERAL: error
-          UNARY_OP: --post
-            IDENTIFIER: j (line 211)
-          LITERAL: error
-          LITERAL: error
           PRINT: print (line 213)
             IDENTIFIER: j (line 213)
       ASSIGNMENT: counter
@@ -507,20 +487,15 @@ PROGRAM: program
           PRINT: print (line 346)
             LITERAL: Values array: (line 346)
           FOR: for (line 347)
-            IDENTIFIER: i (line 347)
-            LITERAL: error
-            LITERAL: 0 (line 347)
+            ASSIGNMENT: i
+              LITERAL: 0 (line 347)
+            BINARY_OP: <
+              IDENTIFIER: i (line 347)
+              FUNCTION_CALL: len
+                IDENTIFIER: values (line 347)
+            UNARY_OP: ++post
+              IDENTIFIER: i (line 347)
             BLOCK: block
-              LITERAL: error
-              BINARY_OP: <
-                IDENTIFIER: i (line 347)
-                FUNCTION_CALL: len
-                  IDENTIFIER: values (line 347)
-              LITERAL: error
-              UNARY_OP: ++post
-                IDENTIFIER: i (line 347)
-              LITERAL: error
-              LITERAL: error
               PRINT: print (line 349)
                 ARRAY_ACCESS: []
                   IDENTIFIER: values (line 349)
@@ -528,20 +503,15 @@ PROGRAM: program
           PRINT: print (line 352)
             LITERAL: Buffer vector: (line 352)
           FOR: for (line 353)
-            IDENTIFIER: j (line 353)
-            LITERAL: error
-            LITERAL: 0 (line 353)
+            ASSIGNMENT: j
+              LITERAL: 0 (line 353)
+            BINARY_OP: <
+              IDENTIFIER: j (line 353)
+              FUNCTION_CALL: size
+                IDENTIFIER: buffer (line 353)
+            UNARY_OP: ++post
+              IDENTIFIER: j (line 353)
             BLOCK: block
-              LITERAL: error
-              BINARY_OP: <
-                IDENTIFIER: j (line 353)
-                FUNCTION_CALL: size
-                  IDENTIFIER: buffer (line 353)
-              LITERAL: error
-              UNARY_OP: ++post
-                IDENTIFIER: j (line 353)
-              LITERAL: error
-              LITERAL: error
               PRINT: print (line 355)
                 ARRAY_ACCESS: []
                   IDENTIFIER: buffer (line 355)
@@ -587,19 +557,14 @@ PROGRAM: program
   FUNCTION: reservedWordsDemo (line 403)
     BLOCK: block
       FOR: for (line 406)
-        IDENTIFIER: i (line 406)
-        LITERAL: error
-        LITERAL: 0 (line 406)
+        ASSIGNMENT: i
+          LITERAL: 0 (line 406)
+        BINARY_OP: <
+          IDENTIFIER: i (line 406)
+          LITERAL: 5 (line 406)
+        UNARY_OP: ++post
+          IDENTIFIER: i (line 406)
         BLOCK: block
-          LITERAL: error
-          BINARY_OP: <
-            IDENTIFIER: i (line 406)
-            LITERAL: 5 (line 406)
-          LITERAL: error
-          UNARY_OP: ++post
-            IDENTIFIER: i (line 406)
-          LITERAL: error
-          LITERAL: error
           IF: if (line 408)
             BINARY_OP: ==
               IDENTIFIER: i (line 408)
@@ -738,12 +703,12 @@ PROGRAM: program
 ====================================
 PARSE TREE STATISTICS
 ====================================
-Total AST Nodes: 731
+Total AST Nodes: 696
 Imports: 2
 Exec Directives: 3
 Functions: 18
 Classes: 3
-Assignments: 97
+Assignments: 104
 For Loops: 9
 While Loops: 2
 If Statements: 4

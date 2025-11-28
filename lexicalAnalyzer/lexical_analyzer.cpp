@@ -437,7 +437,19 @@ int main(int argc, char* argv[]) {
     string src = buffer.str();
 
     LexicalReport rep = tokenizeAndAnalyze(src);
-    cout << formatReport(rep);
+    string reportContent = formatReport(rep);
 
+    // Write to file
+    ofstream outFile("lexical_report.txt");
+    if (!outFile.is_open()) {
+        cerr << "Error: Could not create output file.\n";
+        return 1;
+    }
+    outFile << reportContent;
+    outFile.close();
+
+    // Also print to console
+    cout << reportContent;
+    cout << "\nReport also saved to lexical_report.txt\n";
     return 0;
 }

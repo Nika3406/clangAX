@@ -3,81 +3,18 @@ C-ACCEL SYNTAX PARSE REPORT
 Source File: ../SampleCode.txt
 Total Tokens: 1408
 
-ERRORS:
-  Line 91: Expected ',' in for
-  Line 91: Unexpected token: =
-  Line 91: Expected ',' in for
-  Line 91: Expected ')' after for
-  Line 91: Expected '{'
-  Line 91: Unexpected token: ,
-  Line 91: Unexpected token: ,
-  Line 91: Unexpected token: )
-  Line 92: Unexpected token: {
-  Line 147: Expected ',' in for
-  Line 147: Unexpected token: =
-  Line 147: Expected ',' in for
-  Line 147: Expected ')' after for
-  Line 147: Expected '{'
-  Line 147: Unexpected token: ,
-  Line 147: Unexpected token: ,
-  Line 147: Unexpected token: )
-  Line 148: Unexpected token: {
-  Line 206: Expected ',' in for
-  Line 206: Unexpected token: =
-  Line 206: Expected ',' in for
-  Line 206: Expected ')' after for
-  Line 206: Expected '{'
-  Line 206: Unexpected token: ,
-  Line 206: Unexpected token: ,
-  Line 206: Unexpected token: )
-  Line 207: Unexpected token: {
-  Line 211: Expected ',' in for
-  Line 211: Unexpected token: =
-  Line 211: Expected ',' in for
-  Line 211: Expected ')' after for
-  Line 211: Expected '{'
-  Line 211: Unexpected token: ,
-  Line 211: Unexpected token: ,
-  Line 211: Unexpected token: )
-  Line 212: Unexpected token: {
-  Line 347: Expected ',' in for
-  Line 347: Unexpected token: =
-  Line 347: Expected ',' in for
-  Line 347: Expected ')' after for
-  Line 347: Expected '{'
-  Line 347: Unexpected token: ,
-  Line 347: Unexpected token: ,
-  Line 347: Unexpected token: )
-  Line 348: Unexpected token: {
-  Line 353: Expected ',' in for
-  Line 353: Unexpected token: =
-  Line 353: Expected ',' in for
-  Line 353: Expected ')' after for
-  Line 353: Expected '{'
-  Line 353: Unexpected token: ,
-  Line 353: Unexpected token: ,
-  Line 353: Unexpected token: )
-  Line 354: Unexpected token: {
-  Line 406: Expected ',' in for
-  Line 406: Unexpected token: =
-  Line 406: Expected ',' in for
-  Line 406: Expected ')' after for
-  Line 406: Expected '{'
-  Line 406: Unexpected token: ,
-  Line 406: Unexpected token: ,
-  Line 406: Unexpected token: )
-  Line 407: Unexpected token: {
+Status: Parsing completed successfully!
 
 
 ====================================
 PARSE TREE STATISTICS
 ====================================
-Total AST Nodes: 731
+Total AST Nodes: 696
 Imports: 2
 Exec Directives: 3
 Functions: 18
 Classes: 3
-Assignments: 97
+Assignments: 104
 For Loops: 9
 While Loops: 2
 If Statements: 4

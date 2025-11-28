@@ -31,10 +31,10 @@ func() = "primitives"
     str_path = "/usr/local/bin"
 
     // Character literals
-    char_letter = "A"
-    char_digit = "5"
-    char_symbol = "@"
-    char_space = " "
+    char_letter = 'A'
+    char_digit = '5'
+    char_symbol = '@'
+    char_space = ' '
 
     // Boolean literals
     flag_true = true
@@ -124,9 +124,9 @@ func() = "vectorExamples"
     str_vec.push("second")
     str_vec.push("third")
 
-    char_vec.push("X")
-    char_vec.push("Y")
-    char_vec.push("Z")
+    char_vec.push('X')
+    char_vec.push('Y')
+    char_vec.push('Z')
 
     // Access vector elements
     first_int = int_vec[0]

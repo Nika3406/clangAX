@@ -656,6 +656,7 @@ private:
 
         auto node = make_shared<ASTNode>(NodeType::FOR_STMT, "for", forToken.line);
 
+        // for (x in range(...)) style
         if (peek().type == TokenType::IDENTIFIER && peek(1).type == TokenType::IN) {
             Token var = advance();
             expect(TokenType::IN, "Expected 'in'");
@@ -669,10 +670,45 @@ private:
             return node;
         }
 
+        // INITIALIZER: accept assignment (x = 0 or arr[0] = 0) or general expression
+        if (peek().type == TokenType::IDENTIFIER) {
+            // simple identifier assignment: IDENTIFIER '=' ...
+            if (peek(1).type == TokenType::ASSIGN) {
+                node->addChild(parseAssignment());
+            }
+            // identifier followed by '[' — could be indexed assignment: arr[expr] = ...
+            else if (peek(1).type == TokenType::LBRACKET) {
+                // scan ahead to see if there's an ASSIGN after matching brackets
+                size_t saved = current;
+                advance(); // id
+                advance(); // '['
+                int depth = 1;
+                while (depth > 0 && peek().type != TokenType::END_OF_FILE) {
+                    if (peek().type == TokenType::LBRACKET) depth++;
+                    else if (peek().type == TokenType::RBRACKET) depth--;
+                    advance();
+                }
+                TokenType after = peek().type;
+                current = saved; // restore
+                if (after == TokenType::ASSIGN) {
+                    node->addChild(parseAssignment());
+                } else {
+                    node->addChild(parseExpression());
+                }
+            } else {
+                node->addChild(parseExpression());
+            }
+        } else {
+            node->addChild(parseExpression());
+        }
+
+        expect(TokenType::COMMA, "Expected ',' in for");
+
+        // CONDITION
         node->addChild(parseExpression());
         expect(TokenType::COMMA, "Expected ',' in for");
-        node->addChild(parseExpression());
-        expect(TokenType::COMMA, "Expected ',' in for");
+
+        // INCREMENT (expression or unary)
         node->addChild(parseExpression());
         expect(TokenType::RPAREN, "Expected ')' after for");
 
