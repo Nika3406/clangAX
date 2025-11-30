@@ -106,6 +106,8 @@ private:
     map<string, Function*> functions;             // Function registry
     map<string, Type*> structTypes;               // Class/struct types
 
+    bool hasMain = false;
+
     // Printf function for print support
     Function* printfFunc = nullptr;
     Function* putsFunc = nullptr;
@@ -212,6 +214,35 @@ public:
     }
 
     // ============================================
+    // MAIN FUNCTION
+    // ============================================
+    void declareFunction(shared_ptr<ASTNode> node) {
+        string funcName = node->value;
+
+        bool isMain = false;
+        auto it = node->attributes.find("type");
+        if (it != node->attributes.end() && it->second == "Main") {
+            funcName = "main";
+            isMain = true;
+            hasMain = true;
+            cout << "  Found Main function, declaring as 'main'" << endl;
+        } else {
+            cout << "  Declaring function: " << funcName << endl;
+        }
+
+        Type* returnType = isMain ? getInt32Type() : getVoidType();
+        FunctionType* funcType = FunctionType::get(returnType, {}, false);
+        Function* func = Function::Create(
+            funcType,
+            Function::ExternalLinkage,
+            funcName,
+            module.get()
+        );
+
+        functions[funcName] = func;
+    }
+
+    // ============================================
     // TYPE HELPERS
     // ============================================
 
@@ -243,7 +274,7 @@ public:
             return;
         }
 
-        cout << "Generating IR from AST..." << endl;
+        cout << "Generating IR from AST... (debug check)\n";
 
         // First pass: declare all functions
         for (auto& child : ast->children) {
@@ -278,27 +309,6 @@ public:
         }
 
         cout << "IR generation completed!" << endl;
-    }
-
-    void declareFunction(shared_ptr<ASTNode> node) {
-        string funcName = node->value;
-
-        // Check if it's Main function
-        bool isMain = false;
-        if (node->attributes.count("type") && node->attributes["type"] == "Main") {
-            funcName = "main";
-            isMain = true;
-            cout << "  Found Main function, declaring as 'main'" << endl;
-        } else {
-            cout << "  Declaring function: " << funcName << endl;
-        }
-
-        // Main returns int, others return void for now
-        Type* returnType = isMain ? getInt32Type() : getVoidType();
-        FunctionType* funcType = FunctionType::get(returnType, {}, false);
-        Function* func = Function::Create(funcType, Function::ExternalLinkage, funcName, module.get());
-
-        functions[funcName] = func;
     }
 
     void generateFunction(shared_ptr<ASTNode> node) {
@@ -854,10 +864,19 @@ public:
                 child->value != funcName) { // Skip object reference
                 Value* arg = generateExpression(child);
                 if (arg) args.push_back(arg);
-            }
+                }
         }
 
-        return builder->CreateCall(func, args, "calltmp");
+        // Do NOT give calls to void-valued functions a name
+        CallInst* call = builder->CreateCall(func, args);
+
+        if (func->getReturnType()->isVoidTy()) {
+            // Statement-only call, nothing to return as a value
+            return nullptr;
+        } else {
+            // Expression with a value (e.g., future non-void user functions)
+            return call;
+        }
     }
 
     Value* generateArrayLiteral(shared_ptr<ASTNode> node) {
@@ -1376,21 +1395,32 @@ shared_ptr<ASTNode> Parser::parseProgram() {
         } else if (peek().type == TokenType::FUNC) {
             program->addChild(parseFunction());
         } else if (peek().type == TokenType::CLASS) {
-            // Skip classes for now
-            advance(); // class
-            while (peek().type != TokenType::RBRACE && peek().type != TokenType::END_OF_FILE) {
-                if (peek().type == TokenType::LBRACE) {
-                    int depth = 1;
-                    advance();
-                    while (depth > 0 && peek().type != TokenType::END_OF_FILE) {
-                        if (peek().type == TokenType::LBRACE) depth++;
-                        if (peek().type == TokenType::RBRACE) depth--;
-                        advance();
+            // Skip a single class definition for now
+
+            advance(); // consume 'class'
+
+            // Skip until we hit the opening '{' of the class body
+            while (peek().type != TokenType::LBRACE &&
+                   peek().type != TokenType::END_OF_FILE) {
+                advance();
+                   }
+
+            // Now skip the entire '{ ... }' block, including nested braces
+            if (peek().type == TokenType::LBRACE) {
+                int depth = 1;
+                advance(); // consume '{'
+
+                while (depth > 0 && peek().type != TokenType::END_OF_FILE) {
+                    if (peek().type == TokenType::LBRACE) {
+                        depth++;
+                    } else if (peek().type == TokenType::RBRACE) {
+                        depth--;
                     }
-                } else {
                     advance();
                 }
             }
+
+            // Done skipping ONE class; control returns to the main while loop.
         } else {
             advance();
         }
@@ -1411,8 +1441,6 @@ shared_ptr<ASTNode> Parser::parseFunction() {
     expect(TokenType::RPAREN, "Expected ')' after func type");
 
     string funcName = "";
-
-    // Check if there's an assignment (for named functions)
     if (peek().type == TokenType::ASSIGN) {
         advance();
         Token nameToken = advance();
@@ -1420,15 +1448,21 @@ shared_ptr<ASTNode> Parser::parseFunction() {
         if ((funcName.front() == '\'' && funcName.back() == '\'') ||
             (funcName.front() == '"' && funcName.back() == '"')) {
             funcName = funcName.substr(1, funcName.length() - 2);
-        }
-    } else if (!funcType.empty()) {
-        // If no name but has type (like func(Main)), use type as name
-        funcName = funcType;
+            }
     }
 
-    auto node = make_shared<ASTNode>(NodeType::FUNCTION_DECL,
-                                    funcName.empty() ? funcType : funcName,
-                                    funcToken.line);
+    // Enforce your language rule: Main must be nameless
+    if (funcType == "Main" && !funcName.empty()) {
+        throw runtime_error(
+            "Main function cannot have a name. Use 'func(Main) { ... }' with no '= \"name\"'."
+        );
+    }
+
+    auto node = make_shared<ASTNode>(
+        NodeType::FUNCTION_DECL,
+        funcName.empty() ? funcType : funcName,
+        funcToken.line
+    );
     if (!funcType.empty()) {
         node->setAttribute("type", funcType);
     }
@@ -1438,6 +1472,8 @@ shared_ptr<ASTNode> Parser::parseFunction() {
 
     return node;
 }
+
+
 
 shared_ptr<ASTNode> Parser::parseBlock() {
     expect(TokenType::LBRACE, "Expected '{'");

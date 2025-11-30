@@ -31,6 +31,28 @@ source_filename = "C-ACCEL-Module"
 @.str.27 = private constant [4 x i8] c"%s\0A\00", align 1
 @.str.28 = private constant [32 x i8] c"Control flow examples completed\00", align 1
 @.str.29 = private constant [4 x i8] c"%s\0A\00", align 1
+@.str.30 = private constant [26 x i8] c"Object examples completed\00", align 1
+@.str.31 = private constant [4 x i8] c"%s\0A\00", align 1
+@.str.32 = private constant [12 x i8] c"Found three\00", align 1
+@.str.33 = private constant [4 x i8] c"%s\0A\00", align 1
+@.str.34 = private constant [4 x i8] c"%d\0A\00", align 1
+@.str.35 = private constant [4 x i8] c"%d\0A\00", align 1
+@.str.36 = private constant [30 x i8] c"Reserved words demo completed\00", align 1
+@.str.37 = private constant [4 x i8] c"%s\0A\00", align 1
+@.str.38 = private constant [21 x i8] c"Edge cases completed\00", align 1
+@.str.39 = private constant [4 x i8] c"%s\0A\00", align 1
+@.str.40 = private constant [41 x i8] c"========================================\00", align 1
+@.str.41 = private constant [4 x i8] c"%s\0A\00", align 1
+@.str.42 = private constant [33 x i8] c"C-Accel Comprehensive Test Suite\00", align 1
+@.str.43 = private constant [4 x i8] c"%s\0A\00", align 1
+@.str.44 = private constant [41 x i8] c"========================================\00", align 1
+@.str.45 = private constant [4 x i8] c"%s\0A\00", align 1
+@.str.46 = private constant [41 x i8] c"========================================\00", align 1
+@.str.47 = private constant [4 x i8] c"%s\0A\00", align 1
+@.str.48 = private constant [34 x i8] c"All tests completed successfully!\00", align 1
+@.str.49 = private constant [4 x i8] c"%s\0A\00", align 1
+@.str.50 = private constant [41 x i8] c"========================================\00", align 1
+@.str.51 = private constant [4 x i8] c"%s\0A\00", align 1
 
 declare i32 @printf(ptr, ...)
 
@@ -338,7 +360,134 @@ ifcont27:                                         ; preds = %ifcont26, %ifcont
   ret void
 }
 
+define void @objectExamples() {
+entry:
+  %0 = call i32 (ptr, ...) @printf(ptr @.str.31, ptr @.str.30)
+  ret void
+}
+
+define void @reservedWordsDemo() {
+entry:
+  %length = alloca i32, align 4
+  %arr = alloca [3 x ptr], align 8
+  %size = alloca i32, align 4
+  %temp = alloca ptr, align 8
+  %count = alloca i32, align 4
+  %i = alloca i32, align 4
+  store i32 0, ptr %i, align 4
+  br label %forcond
+
+forcond:                                          ; preds = %forinc, %entry
+  %i1 = load i32, ptr %i, align 4
+  %cmptmp = icmp slt i32 %i1, 5
+  br i1 %cmptmp, label %forbody, label %afterfor
+
+forbody:                                          ; preds = %forcond
+  %i2 = load i32, ptr %i, align 4
+  %cmptmp3 = icmp eq i32 %i2, 3
+  br i1 %cmptmp3, label %then, label %else
+
+then:                                             ; preds = %forbody
+  %0 = call i32 (ptr, ...) @printf(ptr @.str.33, ptr @.str.32)
+  br label %ifcont
+
+else:                                             ; preds = %forbody
+  %i4 = load i32, ptr %i, align 4
+  %1 = call i32 (ptr, ...) @printf(ptr @.str.34, i32 %i4)
+  br label %ifcont
+
+ifcont:                                           ; preds = %else, %then
+  br label %forinc
+
+forinc:                                           ; preds = %ifcont
+  %i5 = load i32, ptr %i, align 4
+  %inc = add i32 %i5, 1
+  store i32 %inc, ptr %i, align 4
+  br label %forcond
+
+afterfor:                                         ; preds = %forcond
+  store i32 0, ptr %count, align 4
+  br label %whilecond
+
+whilecond:                                        ; preds = %whilebody, %afterfor
+  %count6 = load i32, ptr %count, align 4
+  %cmptmp7 = icmp slt i32 %count6, 3
+  br i1 %cmptmp7, label %whilebody, label %afterwhile
+
+whilebody:                                        ; preds = %whilecond
+  %count8 = load i32, ptr %count, align 4
+  %2 = call i32 (ptr, ...) @printf(ptr @.str.35, i32 %count8)
+  %count9 = load i32, ptr %count, align 4
+  %inc10 = add i32 %count9, 1
+  store i32 %inc10, ptr %count, align 4
+  br label %whilecond
+
+afterwhile:                                       ; preds = %whilecond
+  store i32 0, ptr %size, align 4
+  %array = alloca [3 x i32], align 4
+  store [3 x i32] [i32 1, i32 2, i32 3], ptr %array, align 4
+  store ptr %array, ptr %arr, align 8
+  store i32 3, ptr %length, align 4
+  %3 = call i32 (ptr, ...) @printf(ptr @.str.37, ptr @.str.36)
+  ret void
+}
+
+define void @edgeCases() {
+entry:
+  %x = alloca i32, align 4
+  %complex = alloca [3 x i32], align 4
+  %size = alloca i32, align 4
+  %nums = alloca ptr, align 8
+  %value = alloca double, align 8
+  %empty = alloca i32, align 4
+  %single = alloca [1 x ptr], align 8
+  %result = alloca i32, align 4
+  %c = alloca i32, align 4
+  %b = alloca i32, align 4
+  %a = alloca i32, align 4
+  %large_float = alloca double, align 8
+  %large_int = alloca i32, align 4
+  store i32 123456789, ptr %large_int, align 4
+  store double 0x412E240CA45A1CAC, ptr %large_float, align 8
+  store i32 1, ptr %a, align 4
+  store i32 2, ptr %b, align 4
+  store i32 3, ptr %c, align 4
+  store i32 27, ptr %result, align 4
+  %array = alloca [1 x i32], align 4
+  store [1 x i32] [i32 42], ptr %array, align 4
+  store ptr %array, ptr %single, align 8
+  store i32 0, ptr %empty, align 4
+  store double 3.140000e+00, ptr %value, align 8
+  store i32 0, ptr %size, align 4
+  %array1 = alloca [2 x i32], align 4
+  store [2 x i32] [i32 1, i32 2], ptr %array1, align 4
+  store i32 0, ptr %complex, align 4
+  store i32 10, ptr %x, align 4
+  %x2 = load i32, ptr %x, align 4
+  %inc = add i32 %x2, 1
+  store i32 %inc, ptr %x, align 4
+  %x3 = load i32, ptr %x, align 4
+  %dec = sub i32 %x3, 1
+  store i32 %dec, ptr %x, align 4
+  %0 = call i32 (ptr, ...) @printf(ptr @.str.39, ptr @.str.38)
+  ret void
+}
+
 define i32 @main() {
 entry:
+  %0 = call i32 (ptr, ...) @printf(ptr @.str.41, ptr @.str.40)
+  %1 = call i32 (ptr, ...) @printf(ptr @.str.43, ptr @.str.42)
+  %2 = call i32 (ptr, ...) @printf(ptr @.str.45, ptr @.str.44)
+  call void @primitives()
+  call void @arrayExamples()
+  call void @vectorExamples()
+  call void @operatorExamples()
+  call void @controlFlow()
+  call void @objectExamples()
+  call void @reservedWordsDemo()
+  call void @edgeCases()
+  %3 = call i32 (ptr, ...) @printf(ptr @.str.47, ptr @.str.46)
+  %4 = call i32 (ptr, ...) @printf(ptr @.str.49, ptr @.str.48)
+  %5 = call i32 (ptr, ...) @printf(ptr @.str.51, ptr @.str.50)
   ret i32 0
 }
