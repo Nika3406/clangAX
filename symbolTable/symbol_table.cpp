@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <filesystem>
 #include <variant>
+#include <stack>
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -23,7 +24,7 @@ struct SymbolEntry {
     VarValue value;
     int line_declared;
     bool initialized;
-    string scope;  // global, function_name, class_name
+    string scope;
 
     SymbolEntry() : name(""), dataType(""), value(monostate{}), line_declared(0), initialized(false), scope("global") {}
 
@@ -49,7 +50,7 @@ public:
     SymbolTable() : table(TABLE_SIZE) {}
 
     bool insert(const string& name, const string& dataType, int line, const string& scope = "global") {
-        int index = hashFunction(name);
+        int index = hashFunction(name + scope);  // Hash with scope for uniqueness
 
         // Check if symbol already exists in the same scope
         for (auto& entry : table[index]) {
@@ -64,7 +65,7 @@ public:
     }
 
     bool updateValue(const string& name, const VarValue& val, const string& scope = "global") {
-        int index = hashFunction(name);
+        int index = hashFunction(name + scope);
 
         for (auto& entry : table[index]) {
             if (entry.name == name && entry.scope == scope) {
@@ -77,7 +78,7 @@ public:
     }
 
     SymbolEntry* lookup(const string& name, const string& scope = "global") {
-        int index = hashFunction(name);
+        int index = hashFunction(name + scope);
 
         for (auto& entry : table[index]) {
             if (entry.name == name && entry.scope == scope) {
@@ -133,11 +134,22 @@ public:
                 if (holds_alternative<int>(entry->value)) {
                     valueStr = to_string(get<int>(entry->value));
                 } else if (holds_alternative<double>(entry->value)) {
-                    valueStr = to_string(get<double>(entry->value));
+                    double val = get<double>(entry->value);
+                    char buffer[50];
+                    snprintf(buffer, sizeof(buffer), "%.6f", val);
+                    valueStr = buffer;
                 } else if (holds_alternative<string>(entry->value)) {
-                    valueStr = get<string>(entry->value);
+                    string val = get<string>(entry->value);
+                    // Check if it's a special marker
+                    if (val == "[array]" || val == "[vector]") {
+                        valueStr = val;
+                    } else if (val.length() > 20) {
+                        valueStr = "\"" + val.substr(0, 17) + "...\"";
+                    } else {
+                        valueStr = "\"" + val + "\"";
+                    }
                 } else if (holds_alternative<char>(entry->value)) {
-                    valueStr = string(1, get<char>(entry->value));
+                    valueStr = "'" + string(1, get<char>(entry->value)) + "'";
                 } else {
                     valueStr = "(uninitialized)";
                 }
@@ -162,10 +174,8 @@ public:
 
         auto symbols = getAllSymbols();
 
-        // Write CSV header
         file << "Variable,Data Type,Value,Line,Initialized,Scope\n";
 
-        // Write each symbol
         for (auto* entry : symbols) {
             string valueStr;
             if (entry->initialized) {
@@ -193,7 +203,6 @@ public:
         }
 
         file.close();
-        cout << "Symbol table saved to CSV: " << filepath << endl;
     }
 };
 
@@ -214,8 +223,11 @@ VarValue parseValue(const string& valueStr, const string& dataType) {
     trimmed.erase(0, trimmed.find_first_not_of(" \t"));
     trimmed.erase(trimmed.find_last_not_of(" \t\r\n") + 1);
 
-    // Handle based on inferred data type
     if (dataType == "string") {
+        // Remove quotes if present
+        if (trimmed.length() >= 2 && trimmed.front() == '"' && trimmed.back() == '"') {
+            return trimmed.substr(1, trimmed.length() - 2);
+        }
         return trimmed;
     }
 
@@ -231,18 +243,34 @@ VarValue parseValue(const string& valueStr, const string& dataType) {
         } catch (...) {}
     }
 
-    if (dataType == "float") {
+    if (dataType == "float" || dataType == "double") {
         try {
             return stod(trimmed);
         } catch (...) {}
     }
 
+    // For arrays, just return a placeholder string
+    if (dataType == "array") {
+        if (trimmed.find('[') != string::npos) {
+            return string("[array]");
+        }
+    }
+
+    // For vectors, return placeholder
+    if (dataType == "vector") {
+        return string("[vector]");
+    }
+
+    // For identifiers/function calls, return the reference
+    if (dataType == "identifier" || dataType == "function_call") {
+        return trimmed;
+    }
+
     return monostate{};
 }
 
-// Parse lexical report to extract variable information with types
 map<string, string> parseLexicalReport(const string& reportPath) {
-    map<string, string> varTypes;  // variable_name -> data_type
+    map<string, string> varTypes;
 
     ifstream file(reportPath);
     if (!file.is_open()) {
@@ -254,24 +282,17 @@ map<string, string> parseLexicalReport(const string& reportPath) {
     bool inInferredTypes = false;
 
     while (getline(file, line)) {
-        // Find the "Inferred Data Types:" section
         if (line.find("Inferred Data Types:") != string::npos) {
             inInferredTypes = true;
             continue;
         }
 
-        // Stop when we reach the next section
         if (inInferredTypes && (line.find("Function Specializations:") != string::npos ||
-                                line.find("All identifiers") != string::npos ||
-                                line.empty())) {
-            if (!line.empty() && line.find(":") == string::npos) {
-                break;
-            }
+                                line.find("All identifiers") != string::npos)) {
+            break;
         }
 
-        // Parse variable : type pairs
         if (inInferredTypes && line.find(":") != string::npos) {
-            // Remove leading whitespace
             string trimmed = line;
             trimmed.erase(0, trimmed.find_first_not_of(" \t"));
 
@@ -280,7 +301,6 @@ map<string, string> parseLexicalReport(const string& reportPath) {
                 string varName = trimmed.substr(0, colonPos);
                 string varType = trimmed.substr(colonPos + 1);
 
-                // Trim both
                 varName.erase(varName.find_last_not_of(" \t") + 1);
                 varType.erase(0, varType.find_first_not_of(" \t"));
                 varType.erase(varType.find_last_not_of(" \t\r\n") + 1);
@@ -296,21 +316,28 @@ map<string, string> parseLexicalReport(const string& reportPath) {
     return varTypes;
 }
 
-// Process source code to get values and build symbol table
 void processSourceCode(const string& src, SymbolTable& symTable, const map<string, string>& varTypes) {
     regex RE_ASSIGNMENT(R"(([A-Za-z_]\w*)\s*=\s*(.+))");
     regex RE_VECTOR_DECL(R"(vector\s*<[^>]+>\s+([A-Za-z_]\w*))");
+    regex RE_FUNC_START(R"(func\([^)]*\)\s*=\s*["\']([^"\']+)["\'])");
+    regex RE_CLASS_START(R"(class\([^)]*\)\s*=\s*["\']([^"\']+)["\'])");
 
     stringstream ss(src);
     string line;
     int lineNum = 0;
-    string currentScope = "global";
 
-    // Track multi-line assignments
+    int braceDepth = 0;  // Track overall brace depth
+    map<int, string> depthToScope;  // Map brace depth to scope name
+    depthToScope[0] = "global";
+
+    string currentClass = "";  // Track current class context
+    int classStartDepth = -1;  // Track the brace depth where class started
+
+    // Multi-line tracking
     string pending_var = "";
     string pending_value = "";
     bool in_multiline = false;
-    int brace_count = 0;
+    int multiline_brace_count = 0;
 
     while (getline(ss, line)) {
         lineNum++;
@@ -320,20 +347,60 @@ void processSourceCode(const string& src, SymbolTable& symTable, const map<strin
             continue;
         }
 
-        // Track scope changes
-        if (cleaned.find("func(") != string::npos || cleaned.find("func()") != string::npos) {
-            size_t start = cleaned.find("'");
-            size_t end = cleaned.rfind("'");
-            if (start != string::npos && end != string::npos && start < end) {
-                currentScope = cleaned.substr(start + 1, end - start - 1);
+        // Track braces for scope management
+        int openBraces = 0, closeBraces = 0;
+        for (char c : cleaned) {
+            if (c == '{') openBraces++;
+            else if (c == '}') closeBraces++;
+        }
+
+        // Detect class scope BEFORE updating brace depth
+        smatch class_match;
+        if (regex_search(cleaned, class_match, RE_CLASS_START)) {
+            string className = class_match[1];
+            currentClass = className;
+            classStartDepth = braceDepth + openBraces - closeBraces;
+            depthToScope[classStartDepth] = className;
+        }
+
+        // Update brace depth
+        braceDepth += (openBraces - closeBraces);
+
+        // Reset class context when we exit the class's brace level
+        if (classStartDepth >= 0 && braceDepth <= classStartDepth) {
+            if (closeBraces > 0) {  // Only reset if we actually closed a brace
+                currentClass = "";
+                classStartDepth = -1;
             }
         }
 
-        if (cleaned.find("class(") != string::npos || cleaned.find("class()") != string::npos) {
-            size_t start = cleaned.find("\"");
-            size_t end = cleaned.rfind("\"");
-            if (start != string::npos && end != string::npos && start < end) {
-                currentScope = cleaned.substr(start + 1, end - start - 1);
+        // Clean up scope map for closed braces
+        if (closeBraces > 0) {
+            for (int d = braceDepth + 1; d <= braceDepth + closeBraces; d++) {
+                if (depthToScope.count(d)) {
+                    depthToScope.erase(d);
+                }
+            }
+        }
+
+        // Detect function scope
+        smatch func_match;
+        if (regex_search(cleaned, func_match, RE_FUNC_START)) {
+            string funcName = func_match[1];
+            // If we're in a class (currentClass is set), prefix function name
+            if (!currentClass.empty()) {
+                depthToScope[braceDepth] = currentClass + "::" + funcName;
+            } else {
+                depthToScope[braceDepth] = funcName;
+            }
+        }
+
+        // Get current scope based on brace depth
+        string currentScope = "global";
+        for (int d = braceDepth; d >= 0; d--) {
+            if (depthToScope.count(d)) {
+                currentScope = depthToScope[d];
+                break;
             }
         }
 
@@ -342,11 +409,11 @@ void processSourceCode(const string& src, SymbolTable& symTable, const map<strin
             pending_value += " " + cleaned;
 
             for (char c : cleaned) {
-                if (c == '[' || c == '{') brace_count++;
-                if (c == ']' || c == '}') brace_count--;
+                if (c == '[' || c == '{') multiline_brace_count++;
+                if (c == ']' || c == '}') multiline_brace_count--;
             }
 
-            if (brace_count == 0) {
+            if (multiline_brace_count == 0) {
                 in_multiline = false;
 
                 auto typeIt = varTypes.find(pending_var);
@@ -383,27 +450,24 @@ void processSourceCode(const string& src, SymbolTable& symTable, const map<strin
             if (SPEC_RESERVED.count(varName)) continue;
 
             // Check for multi-line
-            brace_count = 0;
+            multiline_brace_count = 0;
             for (char c : valueStr) {
-                if (c == '[' || c == '{') brace_count++;
-                if (c == ']' || c == '}') brace_count--;
+                if (c == '[' || c == '{') multiline_brace_count++;
+                if (c == ']' || c == '}') multiline_brace_count--;
             }
 
-            if (brace_count > 0) {
+            if (multiline_brace_count > 0) {
                 in_multiline = true;
                 pending_var = varName;
                 pending_value = valueStr;
                 continue;
             }
 
-            // Get data type from lexical report
             auto typeIt = varTypes.find(varName);
             string dataType = (typeIt != varTypes.end()) ? typeIt->second : "unknown";
 
-            // Insert into symbol table
             symTable.insert(varName, dataType, lineNum, currentScope);
 
-            // Parse and store value
             VarValue val = parseValue(valueStr, dataType);
             symTable.updateValue(varName, val, currentScope);
         }
@@ -424,12 +488,10 @@ int main(int argc, char* argv[]) {
     cout << "Reading lexical report: " << lexicalReportPath << endl;
     cout << "Reading source code: " << sourceCodePath << endl << endl;
 
-    // Parse lexical report to get variable types
     map<string, string> varTypes = parseLexicalReport(lexicalReportPath);
 
     cout << "Found " << varTypes.size() << " variables with inferred types from lexical report.\n\n";
 
-    // Read source code
     ifstream sourceFile(sourceCodePath);
     if (!sourceFile.is_open()) {
         cerr << "Error: Could not open source file: " << sourceCodePath << endl;
@@ -441,32 +503,25 @@ int main(int argc, char* argv[]) {
     sourceFile.close();
     string src = buffer.str();
 
-    // Build symbol table
     SymbolTable symTable;
     processSourceCode(src, symTable, varTypes);
 
-    // Print to console
     symTable.printConsole("C-ACCEL SYMBOL TABLE");
 
-    // Save to CSV
-    fs::path current = fs::current_path();
-    fs::path project_root = current.parent_path();
-    fs::path csv_path = project_root / "symbolTable" / "symbol_table.csv";
-    fs::path txt_path = project_root / "symbolTable" / "symbol_table_report.txt";
-
-    symTable.saveToCSV(csv_path.string());
-
-    // Also save text report
-    streambuf* coutbuf = cout.rdbuf();
-    ofstream output_file(txt_path);
-
+    string output_path = "../symbol_table_report.txt";
+    ofstream output_file(output_path);
     if (output_file.is_open()) {
+        streambuf* coutbuf = cout.rdbuf();
         cout.rdbuf(output_file.rdbuf());
         symTable.printConsole("C-ACCEL SYMBOL TABLE");
         cout.rdbuf(coutbuf);
         output_file.close();
-        cout << "Text report saved to: " << txt_path << endl;
+        cout << "\nText report saved to: " << output_path << endl;
     }
+
+    string csv_path = "../symbol_table.csv";
+    symTable.saveToCSV(csv_path);
+    cout << "CSV saved to: " << csv_path << endl;
 
     return 0;
 }
