@@ -1814,8 +1814,13 @@ shared_ptr<ASTNode> Parser::parsePrimary() {
 // MAIN
 // ============================================
 
-int main(int, char**) {
-    string filename = "../SampleCode.txt";
+int main(int argc, char** argv) {
+    // Default filename or get from command line
+    string filename = "SampleCode.cax";
+
+    if (argc > 1) {
+        filename = argv[1];
+    }
 
     cout << "C-ACCEL to LLVM IR Compiler\n";
     cout << "============================\n\n";
@@ -1866,7 +1871,7 @@ int main(int, char**) {
     cout << "\n" << string(60, '=') << "\n";
     gen.verify();
 
-    string outputFile = "../irGenerator/output.ll";
+    string outputFile = "irGenerator/output.ll";
     gen.writeIRToFile(outputFile);
 
     cout << "\nCompilation completed successfully!\n";

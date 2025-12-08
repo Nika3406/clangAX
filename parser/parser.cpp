@@ -1193,7 +1193,7 @@ struct ParseStatistics {
 // ============================================
 
 int main(int argc, char* argv[]) {
-    string filename = (argc < 2) ? "../SampleCode.txt" : argv[1];
+    string filename = (argc < 2) ? "../SampleCode.cax" : argv[1];
 
     cout << "C-Accel Syntax Parser\n";
     cout << "=====================\n";

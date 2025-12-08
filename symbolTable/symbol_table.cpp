@@ -476,7 +476,7 @@ void processSourceCode(const string& src, SymbolTable& symTable, const map<strin
 
 int main(int argc, char* argv[]) {
     string lexicalReportPath = "../lexicalAnalyzer/lexical_report.txt";
-    string sourceCodePath = "../SampleCode.txt";
+    string sourceCodePath = "../SampleCode.cax";
 
     if (argc >= 2) {
         lexicalReportPath = argv[1];

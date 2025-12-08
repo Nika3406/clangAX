@@ -424,7 +424,7 @@ string formatReport(const LexicalReport& rep) {
 
 // -----------------------------------------------------
 int main(int argc, char* argv[]) {
-    string filename = (argc < 2) ? "../SampleCode.txt" : argv[1];
+    string filename = (argc < 2) ? "../SampleCode.cax" : argv[1];
 
     ifstream file(filename);
     if (!file.is_open()) {
