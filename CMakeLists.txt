@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(clangAX)
+project(cmake-build-debug/clangax)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -76,7 +76,7 @@ add_executable(parser
 
 # IR Generator
 add_executable(irGenerator
-        irGenerator/ir_generator.cpp
+        irGenerator/irGenerator.cpp
 )
 target_include_directories(irGenerator PRIVATE ${CMAKE_SOURCE_DIR}/parser)
 target_link_libraries(irGenerator ${llvm_libs})
@@ -122,7 +122,7 @@ add_custom_target(test
         COMMAND ${CMAKE_COMMAND} -E echo "Running compiled program:"
         COMMAND ${CMAKE_COMMAND} -E echo "========================================"
         COMMAND ${CMAKE_BINARY_DIR}/test_program
-        DEPENDS clangax lexicalAnalyzer parser symbolTable irGenerator
+        DEPENDS cmake-build-debug/clangax lexicalAnalyzer parser symbolTable cmake-build-debug/irGenerator
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMENT "Testing clangax compiler with SampleCode.cax"
 )
@@ -135,7 +135,7 @@ add_custom_target(test-compile
         ${CMAKE_BINARY_DIR}/SampleCode.cax
         COMMAND ${CMAKE_COMMAND} -E echo "Compiling SampleCode.cax..."
         COMMAND ${CMAKE_BINARY_DIR}/clangax ${CMAKE_BINARY_DIR}/SampleCode.cax -o test_program -v
-        DEPENDS clangax lexicalAnalyzer parser symbolTable irGenerator
+        DEPENDS cmake-build-debug/clangax lexicalAnalyzer parser symbolTable cmake-build-debug/irGenerator
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMENT "Testing clangax compiler (compile only)"
 )

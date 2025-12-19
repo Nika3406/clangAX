@@ -114,24 +114,24 @@ private:
         }
 
         // Check for output.ll in irGenerator folder
-        if (!fs::exists("irGenerator/output.ll")) {
+        if (!fs::exists("../irGenerator/output.ll")) {
             printError("IR generator did not produce output.ll");
             return false;
         }
 
         // Copy output.ll to desired location if specified
-        if (!outputLL.empty() && outputLL != "irGenerator/output.ll") {
+        if (!outputLL.empty() && outputLL != "../irGenerator/output.ll") {
             try {
-                fs::copy_file("irGenerator/output.ll", outputLL,
+                fs::copy_file("../irGenerator/output.ll", outputLL,
                              fs::copy_options::overwrite_existing);
                 printSuccess("LLVM IR generated: " + outputLL);
             } catch (const exception& e) {
                 printWarning("Could not copy output.ll to " + outputLL);
-                outputLL = "irGenerator/output.ll";
+                outputLL = "../irGenerator/output.ll";
                 printSuccess("LLVM IR generated: " + outputLL);
             }
         } else {
-            outputLL = "irGenerator/output.ll";
+            outputLL = "../irGenerator/output.ll";
             printSuccess("LLVM IR generated: " + outputLL);
         }
 
@@ -180,7 +180,7 @@ private:
         if (!keepIntermediate) {
             printStep("CLEANUP", "Removing intermediate files...");
 
-            if (outputLL != "irGenerator/output.ll") {
+            if (outputLL != "../irGenerator/output.ll") {
                 if (fs::exists(outputLL)) {
                     fs::remove(outputLL);
                     if (verbose) {
