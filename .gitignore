@@ -1,6 +1,8 @@
 # CLion files
 .idea/
-cmake-build-*/
+cmake-build-debug/.cmake
+cmake-build-debug/CMakeFiles
+cmake-build-debug/Testing
 
 # Build artifacts
 *.exe
