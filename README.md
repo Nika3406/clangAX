@@ -135,7 +135,7 @@ while (count < 5) {
 }
 
 // For loop
-for (i = 0 i < 10 i++) {
+for (i = 0; i < 10; i++;) {
     print(i)
 }
 ```
@@ -674,7 +674,7 @@ func(Main) { }              // Main function
 x = 42                     // Variable
 arr = [1, 2, 3]           // Array
 if (x > 0) { }             // Conditional
-for (i = 0 i < 10 i++) { } // Loop
+for (i = 0; i < 10; i++;) { } // Loop
 print(x)                  // Output
 ```
 
