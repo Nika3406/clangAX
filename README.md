@@ -135,7 +135,7 @@ while (count < 5) {
 }
 
 // For loop
-for (i = 0; i < 10; i++;) {
+for (i = 0; i < 10; i++) {
     print(i)
 }
 ```
@@ -501,14 +501,14 @@ func(Main) {
     data = [64, 34, 25, 12, 22, 11, 90]
     
     print("Before sorting:")
-    for (i = 0; i < len(data); i++;) {
+    for (i = 0; i < len(data); i++) {
         print(data[i])
     }
     
     quicksort(data)
     
     print("After sorting:")
-    for (i = 0; i < len(data); i++;) {
+    for (i = 0; i < len(data); i++) {
         print(data[i])
     }
 }
@@ -568,7 +568,7 @@ func() = "fibonacci" {
     a = 0
     b = 1
     
-    for (i = 0; i < n; i++;) {
+    for (i = 0; i < n; i++) {
         print(a)
         temp = a + b
         a = b
@@ -674,7 +674,7 @@ func(Main) { }              // Main function
 x = 42                     // Variable
 arr = [1, 2, 3]           // Array
 if (x > 0) { }             // Conditional
-for (i = 0; i < 10; i++;) { } // Loop
+for (i = 0; i < 10; i++) { } // Loop
 print(x)                  // Output
 ```
 
