@@ -501,14 +501,14 @@ func(Main) {
     data = [64, 34, 25, 12, 22, 11, 90]
     
     print("Before sorting:")
-    for (i = 0 i < len(data) i++) {
+    for (i = 0; i < len(data); i++;) {
         print(data[i])
     }
     
     quicksort(data)
     
     print("After sorting:")
-    for (i = 0 i < len(data) i++) {
+    for (i = 0; i < len(data); i++;) {
         print(data[i])
     }
 }
@@ -568,7 +568,7 @@ func() = "fibonacci" {
     a = 0
     b = 1
     
-    for (i = 0 i < n i++) {
+    for (i = 0; i < n; i++;) {
         print(a)
         temp = a + b
         a = b
