@@ -50,7 +50,7 @@ Create `hello.cax`:
 
 ```cax
 func(Main) {
-    print("Hello, ClangAX!");
+    print("Hello, ClangAX!")
 }
 ```
 
@@ -102,19 +102,19 @@ func(Math) = "calculate" {
 
 ```cax
 // Integer
-x = 42;
+x = 42
 
 // Float
-pi = 3.14159;
+pi = 3.14159
 
 // Boolean
-flag = true;
+flag = true
 
 // String
-name = "ClangAX";
+name = "ClangAX"
 
 // Array
-numbers = [1, 2, 3, 4, 5];
+numbers = [1, 2, 3, 4, 5]
 ```
 
 ### Control Flow
@@ -122,21 +122,21 @@ numbers = [1, 2, 3, 4, 5];
 ```cax
 // If statement
 if (x > 10) {
-    print("x is large");
+    print("x is large")
 } else {
-    print("x is small");
+    print("x is small")
 }
 
 // While loop
-count = 0;
+count = 0
 while (count < 5) {
-    print(count);
-    count++;
+    print(count)
+    count++
 }
 
 // For loop
-for (i = 0; i < 10; i++) {
-    print(i);
+for (i = 0 i < 10 i++) {
+    print(i)
 }
 ```
 
@@ -144,51 +144,51 @@ for (i = 0; i < 10; i++) {
 
 ```cax
 // Create array
-arr = [10, 20, 30, 40];
+arr = [10, 20, 30, 40]
 
 // Access elements
-first = arr[0];      // 10
+first = arr[0]      // 10
 
 // Modify elements
-arr[1] = 25;
+arr[1] = 25
 
 // Array length
-size = len(arr);     // 4
+size = len(arr)     // 4
 ```
 
 ### Operators
 
 ```cax
 // Arithmetic
-sum = a + b;
-diff = a - b;
-product = a * b;
-quotient = a / b;
-remainder = a % b;
+sum = a + b
+diff = a - b
+product = a * b
+quotient = a / b
+remainder = a % b
 
 // Comparison
-equal = (a == b);
-notEqual = (a != b);
-less = (a < b);
-greater = (a > b);
-lessEqual = (a <= b);
-greaterEqual = (a >= b);
+equal = (a == b)
+notEqual = (a != b)
+less = (a < b)
+greater = (a > b)
+lessEqual = (a <= b)
+greaterEqual = (a >= b)
 
 // Increment/Decrement
-i++;
-j--;
+i++
+j--
 ```
 
 ### Input/Output
 
 ```cax
 // Print to console
-print("Hello");
-print(42);
-print(variable);
+print("Hello")
+print(42)
+print(variable)
 
 // Read from console
-write(x);  // Reads input and stores in variable x
+write(x)  // Reads input and stores in variable x
 ```
 
 ---
@@ -211,35 +211,35 @@ Import libraries at the top of your file:
 
 func(Main) {
     // Basic operations
-    result = sqrt(16);           // 4.0
-    power = pow(2, 8);           // 256.0
-    absolute = abs(-42);         // 42
+    result = sqrt(16)           // 4.0
+    power = pow(2, 8)           // 256.0
+    absolute = abs(-42)         // 42
     
     // Trigonometry
-    sine = sin(1.57);            // ~1.0
-    cosine = cos(0);             // 1.0
-    tangent = tan(0.785);        // ~1.0
+    sine = sin(1.57)            // ~1.0
+    cosine = cos(0)             // 1.0
+    tangent = tan(0.785)        // ~1.0
     
     // Rounding
-    down = floor(4.7);           // 4.0
-    up = ceil(4.3);              // 5.0
-    nearest = round(4.5);        // 5.0
+    down = floor(4.7)           // 4.0
+    up = ceil(4.3)              // 5.0
+    nearest = round(4.5)        // 5.0
     
     // Min/Max
-    minimum = min(10, 20);       // 10
-    maximum = max(10, 20);       // 20
+    minimum = min(10, 20)       // 10
+    maximum = max(10, 20)       // 20
     
     // Statistics
-    data = [1, 2, 3, 4, 5];
-    average = mean(data);        // 3.0
-    stdDev = stddev(data);       // Standard deviation
-    variance = variance(data);   // Variance
+    data = [1, 2, 3, 4, 5]
+    average = mean(data)        // 3.0
+    stdDev = stddev(data)       // Standard deviation
+    variance = variance(data)   // Variance
     
     // Algebra
-    roots = quad(1, -5, 6);      // Solve x² - 5x + 6 = 0
-    greatest = gcd(48, 18);      // 6
-    least = lcm(12, 18);         // 36
-    fact = factorial(5);         // 120
+    roots = quad(1, -5, 6)      // Solve x² - 5x + 6 = 0
+    greatest = gcd(48, 18)      // 6
+    least = lcm(12, 18)         // 36
+    fact = factorial(5)         // 120
 }
 ```
 
@@ -261,44 +261,44 @@ func(Main) {
 
 func(Main) {
     // Stack (LIFO)
-    s = stack_new();
-    stack_push(s, 10);
-    stack_push(s, 20);
-    top = stack_pop(s);          // 20
-    isEmpty = stack_empty(s);    // false
+    s = stack_new()
+    stack_push(s, 10)
+    stack_push(s, 20)
+    top = stack_pop(s)          // 20
+    isEmpty = stack_empty(s)    // false
     
     // Queue (FIFO)
-    q = queue_new();
-    queue_enqueue(q, 1);
-    queue_enqueue(q, 2);
-    front = queue_dequeue(q);    // 1
+    q = queue_new()
+    queue_enqueue(q, 1)
+    queue_enqueue(q, 2)
+    front = queue_dequeue(q)    // 1
     
     // Heap (Priority Queue)
-    h = heap_new();
-    heap_insert(h, 50);
-    heap_insert(h, 20);
-    heap_insert(h, 70);
-    min = heap_extract(h);       // 20 (min-heap)
+    h = heap_new()
+    heap_insert(h, 50)
+    heap_insert(h, 20)
+    heap_insert(h, 70)
+    min = heap_extract(h)       // 20 (min-heap)
     
     // Map (Key-Value)
-    m = map_new();
-    map_set(m, "name", "Alice");
-    map_set(m, "age", 30);
-    name = map_get(m, "name");   // "Alice"
-    hasKey = map_has(m, "age");  // true
+    m = map_new()
+    map_set(m, "name", "Alice")
+    map_set(m, "age", 30)
+    name = map_get(m, "name")   // "Alice"
+    hasKey = map_has(m, "age")  // true
     
     // Set
-    set = set_new();
-    set_add(set, 10);
-    set_add(set, 20);
-    contains = set_has(set, 10); // true
+    set = set_new()
+    set_add(set, 10)
+    set_add(set, 20)
+    contains = set_has(set, 10) // true
     
     // Graph
-    g = graph_new();
-    graph_add_vertex(g, "A");
-    graph_add_vertex(g, "B");
-    graph_add_edge(g, "A", "B", 5);
-    neighbors = graph_neighbors(g, "A");
+    g = graph_new()
+    graph_add_vertex(g, "A")
+    graph_add_vertex(g, "B")
+    graph_add_edge(g, "A", "B", 5)
+    neighbors = graph_neighbors(g, "A")
 }
 ```
 
@@ -318,17 +318,17 @@ func(Main) {
 #import "_alg"
 
 func(Main) {
-    data = [5, 2, 8, 1, 9];
+    data = [5, 2, 8, 1, 9]
     
     // Sorting (modifies array in-place)
-    quicksort(data);             // [1, 2, 5, 8, 9]
+    quicksort(data)             // [1, 2, 5, 8, 9]
     
     // Searching
-    sorted = [1, 2, 5, 8, 9];
-    index = binary_search(sorted, 5);  // 2
+    sorted = [1, 2, 5, 8, 9]
+    index = binary_search(sorted, 5)  // 2
     
     // Shuffle
-    shuffle(data);               // Randomizes order
+    shuffle(data)               // Randomizes order
 }
 ```
 
@@ -347,35 +347,35 @@ func(Main) {
 
 func(Main) {
     // Linear Regression
-    x = [1, 2, 3, 4, 5];
-    y = [2, 4, 6, 8, 10];
-    model = linear_fit(x, y);
-    prediction = linear_predict(model, 6);  // ~12
+    x = [1, 2, 3, 4, 5]
+    y = [2, 4, 6, 8, 10]
+    model = linear_fit(x, y)
+    prediction = linear_predict(model, 6)  // ~12
     
     // K-Nearest Neighbors
-    xTrain = [[1, 2], [2, 3], [3, 4]];
-    yTrain = [0, 0, 1];
-    knn = knn_fit(xTrain, yTrain, 3);
-    label = knn_predict(knn, [2.5, 3.5]);
+    xTrain = [[1, 2], [2, 3], [3, 4]]
+    yTrain = [0, 0, 1]
+    knn = knn_fit(xTrain, yTrain, 3)
+    label = knn_predict(knn, [2.5, 3.5])
     
     // K-Means Clustering
-    data = [[1, 2], [1.5, 1.8], [5, 8], [8, 8]];
-    clusters = kmeans_fit(data, 2, 100);
+    data = [[1, 2], [1.5, 1.8], [5, 8], [8, 8]]
+    clusters = kmeans_fit(data, 2, 100)
     
     // Activation Functions
-    activated = sigmoid(0.5);
-    rectified = relu(-0.5);         // 0
-    hyperbolic = tanh_act(0.5);
+    activated = sigmoid(0.5)
+    rectified = relu(-0.5)         // 0
+    hyperbolic = tanh_act(0.5)
     
     // Metrics
-    yTrue = [1, 2, 3, 4];
-    yPred = [1.1, 2.1, 2.9, 4.2];
-    error = mse(yTrue, yPred);
-    score = r2_score(yTrue, yPred);
+    yTrue = [1, 2, 3, 4]
+    yPred = [1.1, 2.1, 2.9, 4.2]
+    error = mse(yTrue, yPred)
+    score = r2_score(yTrue, yPred)
     
     // Preprocessing
-    normalized = normalize(data);
-    standardized = standardize(data);
+    normalized = normalize(data)
+    standardized = standardize(data)
 }
 ```
 
@@ -480,15 +480,15 @@ caxdis output.caxb --verbose
 #import "_math"
 
 func(Main) {
-    numbers = [1, 2, 3, 4, 5];
+    numbers = [1, 2, 3, 4, 5]
     
-    avg = mean(numbers);
-    sd = stddev(numbers);
+    avg = mean(numbers)
+    sd = stddev(numbers)
     
-    print("Average: ");
-    print(avg);
-    print("Std Dev: ");
-    print(sd);
+    print("Average: ")
+    print(avg)
+    print("Std Dev: ")
+    print(sd)
 }
 ```
 
@@ -498,18 +498,18 @@ func(Main) {
 #import "_alg"
 
 func(Main) {
-    data = [64, 34, 25, 12, 22, 11, 90];
+    data = [64, 34, 25, 12, 22, 11, 90]
     
-    print("Before sorting:");
-    for (i = 0; i < len(data); i++) {
-        print(data[i]);
+    print("Before sorting:")
+    for (i = 0 i < len(data) i++) {
+        print(data[i])
     }
     
-    quicksort(data);
+    quicksort(data)
     
-    print("After sorting:");
-    for (i = 0; i < len(data); i++) {
-        print(data[i]);
+    print("After sorting:")
+    for (i = 0 i < len(data) i++) {
+        print(data[i])
     }
 }
 ```
@@ -521,21 +521,21 @@ func(Main) {
 
 func(Main) {
     // Training data: y = 2x
-    x = [1, 2, 3, 4, 5];
-    y = [2, 4, 6, 8, 10];
+    x = [1, 2, 3, 4, 5]
+    y = [2, 4, 6, 8, 10]
     
     // Fit model
-    model = linear_fit(x, y);
+    model = linear_fit(x, y)
     
     // Make predictions
-    pred1 = linear_predict(model, 6);
-    pred2 = linear_predict(model, 10);
+    pred1 = linear_predict(model, 6)
+    pred2 = linear_predict(model, 10)
     
-    print("Prediction for x=6: ");
-    print(pred1);
+    print("Prediction for x=6: ")
+    print(pred1)
     
-    print("Prediction for x=10: ");
-    print(pred2);
+    print("Prediction for x=10: ")
+    print(pred2)
 }
 ```
 
@@ -545,17 +545,17 @@ func(Main) {
 #import "_datastr"
 
 func(Main) {
-    stack = stack_new();
+    stack = stack_new()
     
     // Push elements
-    stack_push(stack, 10);
-    stack_push(stack, 20);
-    stack_push(stack, 30);
+    stack_push(stack, 10)
+    stack_push(stack, 20)
+    stack_push(stack, 30)
     
     // Pop and print
     while (!stack_empty(stack)) {
-        value = stack_pop(stack);
-        print(value);
+        value = stack_pop(stack)
+        print(value)
     }
 }
 ```
@@ -564,20 +564,20 @@ func(Main) {
 
 ```cax
 func() = "fibonacci" {
-    n = 10;
-    a = 0;
-    b = 1;
+    n = 10
+    a = 0
+    b = 1
     
-    for (i = 0; i < n; i++) {
-        print(a);
-        temp = a + b;
-        a = b;
-        b = temp;
+    for (i = 0 i < n i++) {
+        print(a)
+        temp = a + b
+        a = b
+        b = temp
     }
 }
 
 func(Main) {
-    fibonacci();
+    fibonacci()
 }
 ```
 
@@ -671,11 +671,11 @@ caxdis program.caxb              # Disassemble
 ```cax
 #import "_math"              // Import library
 func(Main) { }              // Main function
-x = 42;                     // Variable
-arr = [1, 2, 3];           // Array
+x = 42                     // Variable
+arr = [1, 2, 3]           // Array
 if (x > 0) { }             // Conditional
-for (i = 0; i < 10; i++) { } // Loop
-print(x);                  // Output
+for (i = 0 i < 10 i++) { } // Loop
+print(x)                  // Output
 ```
 
 ### Library Prefixes
