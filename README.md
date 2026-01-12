@@ -625,9 +625,9 @@ Current version limitations:
 
 Planned features:
 
-- [ ] Function parameters and return values
-- [ ] String manipulation library
-- [ ] File I/O operations
+- [x] Function parameters and return values
+- [x] String manipulation library
+- [x] File I/O operations
 - [ ] JSON parsing
 - [ ] Better error messages with line numbers
 - [ ] Debugger support
