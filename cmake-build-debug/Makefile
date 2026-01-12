@@ -162,121 +162,17 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named intrinsics_gen
+# Target rules for targets named clangax_common
 
 # Build rule for target.
-intrinsics_gen: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 intrinsics_gen
-.PHONY : intrinsics_gen
+clangax_common: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 clangax_common
+.PHONY : clangax_common
 
 # fast build rule for target.
-intrinsics_gen/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/intrinsics_gen.dir/build.make CMakeFiles/intrinsics_gen.dir/build
-.PHONY : intrinsics_gen/fast
-
-#=============================================================================
-# Target rules for targets named vt_gen
-
-# Build rule for target.
-vt_gen: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 vt_gen
-.PHONY : vt_gen
-
-# fast build rule for target.
-vt_gen/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/vt_gen.dir/build.make CMakeFiles/vt_gen.dir/build
-.PHONY : vt_gen/fast
-
-#=============================================================================
-# Target rules for targets named omp_gen
-
-# Build rule for target.
-omp_gen: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 omp_gen
-.PHONY : omp_gen
-
-# fast build rule for target.
-omp_gen/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/omp_gen.dir/build.make CMakeFiles/omp_gen.dir/build
-.PHONY : omp_gen/fast
-
-#=============================================================================
-# Target rules for targets named acc_gen
-
-# Build rule for target.
-acc_gen: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 acc_gen
-.PHONY : acc_gen
-
-# fast build rule for target.
-acc_gen/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/acc_gen.dir/build.make CMakeFiles/acc_gen.dir/build
-.PHONY : acc_gen/fast
-
-#=============================================================================
-# Target rules for targets named target_parser_gen
-
-# Build rule for target.
-target_parser_gen: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 target_parser_gen
-.PHONY : target_parser_gen
-
-# fast build rule for target.
-target_parser_gen/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/target_parser_gen.dir/build.make CMakeFiles/target_parser_gen.dir/build
-.PHONY : target_parser_gen/fast
-
-#=============================================================================
-# Target rules for targets named lexicalAnalyzer
-
-# Build rule for target.
-lexicalAnalyzer: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 lexicalAnalyzer
-.PHONY : lexicalAnalyzer
-
-# fast build rule for target.
-lexicalAnalyzer/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/lexicalAnalyzer.dir/build.make CMakeFiles/lexicalAnalyzer.dir/build
-.PHONY : lexicalAnalyzer/fast
-
-#=============================================================================
-# Target rules for targets named symbolTable
-
-# Build rule for target.
-symbolTable: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 symbolTable
-.PHONY : symbolTable
-
-# fast build rule for target.
-symbolTable/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/symbolTable.dir/build.make CMakeFiles/symbolTable.dir/build
-.PHONY : symbolTable/fast
-
-#=============================================================================
-# Target rules for targets named parser
-
-# Build rule for target.
-parser: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 parser
-.PHONY : parser
-
-# fast build rule for target.
-parser/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/parser.dir/build.make CMakeFiles/parser.dir/build
-.PHONY : parser/fast
-
-#=============================================================================
-# Target rules for targets named irGenerator
-
-# Build rule for target.
-irGenerator: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 irGenerator
-.PHONY : irGenerator
-
-# fast build rule for target.
-irGenerator/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/irGenerator.dir/build.make CMakeFiles/irGenerator.dir/build
-.PHONY : irGenerator/fast
+clangax_common/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clangax_common.dir/build.make CMakeFiles/clangax_common.dir/build
+.PHONY : clangax_common/fast
 
 #=============================================================================
 # Target rules for targets named clangax
@@ -292,176 +188,222 @@ clangax/fast:
 .PHONY : clangax/fast
 
 #=============================================================================
-# Target rules for targets named test
+# Target rules for targets named caxvm
 
 # Build rule for target.
-test: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test
-.PHONY : test
+caxvm: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 caxvm
+.PHONY : caxvm
 
 # fast build rule for target.
-test/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test.dir/build.make CMakeFiles/test.dir/build
-.PHONY : test/fast
+caxvm/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/caxvm.dir/build.make CMakeFiles/caxvm.dir/build
+.PHONY : caxvm/fast
 
 #=============================================================================
-# Target rules for targets named test-compile
+# Target rules for targets named caxdis
 
 # Build rule for target.
-test-compile: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 test-compile
-.PHONY : test-compile
+caxdis: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 caxdis
+.PHONY : caxdis
 
 # fast build rule for target.
-test-compile/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/test-compile.dir/build.make CMakeFiles/test-compile.dir/build
-.PHONY : test-compile/fast
+caxdis/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/caxdis.dir/build.make CMakeFiles/caxdis.dir/build
+.PHONY : caxdis/fast
 
-#=============================================================================
-# Target rules for targets named clean-generated
-
-# Build rule for target.
-clean-generated: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 clean-generated
-.PHONY : clean-generated
-
-# fast build rule for target.
-clean-generated/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/clean-generated.dir/build.make CMakeFiles/clean-generated.dir/build
-.PHONY : clean-generated/fast
-
-#=============================================================================
-# Target rules for targets named create-example
-
-# Build rule for target.
-create-example: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 create-example
-.PHONY : create-example
-
-# fast build rule for target.
-create-example/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/create-example.dir/build.make CMakeFiles/create-example.dir/build
-.PHONY : create-example/fast
-
-clangax.o: clangax.cpp.o
-.PHONY : clangax.o
+src/common/gpu_detect.o: src/common/gpu_detect.cpp.o
+.PHONY : src/common/gpu_detect.o
 
 # target to build an object file
-clangax.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/clangax.dir/build.make CMakeFiles/clangax.dir/clangax.cpp.o
-.PHONY : clangax.cpp.o
+src/common/gpu_detect.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clangax_common.dir/build.make CMakeFiles/clangax_common.dir/src/common/gpu_detect.cpp.o
+.PHONY : src/common/gpu_detect.cpp.o
 
-clangax.i: clangax.cpp.i
-.PHONY : clangax.i
+src/common/gpu_detect.i: src/common/gpu_detect.cpp.i
+.PHONY : src/common/gpu_detect.i
 
 # target to preprocess a source file
-clangax.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/clangax.dir/build.make CMakeFiles/clangax.dir/clangax.cpp.i
-.PHONY : clangax.cpp.i
+src/common/gpu_detect.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clangax_common.dir/build.make CMakeFiles/clangax_common.dir/src/common/gpu_detect.cpp.i
+.PHONY : src/common/gpu_detect.cpp.i
 
-clangax.s: clangax.cpp.s
-.PHONY : clangax.s
+src/common/gpu_detect.s: src/common/gpu_detect.cpp.s
+.PHONY : src/common/gpu_detect.s
 
 # target to generate assembly for a file
-clangax.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/clangax.dir/build.make CMakeFiles/clangax.dir/clangax.cpp.s
-.PHONY : clangax.cpp.s
+src/common/gpu_detect.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clangax_common.dir/build.make CMakeFiles/clangax_common.dir/src/common/gpu_detect.cpp.s
+.PHONY : src/common/gpu_detect.cpp.s
 
-irGenerator/irGenerator.o: irGenerator/irGenerator.cpp.o
-.PHONY : irGenerator/irGenerator.o
+src/common/library.o: src/common/library.cpp.o
+.PHONY : src/common/library.o
 
 # target to build an object file
-irGenerator/irGenerator.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/irGenerator.dir/build.make CMakeFiles/irGenerator.dir/irGenerator/irGenerator.cpp.o
-.PHONY : irGenerator/irGenerator.cpp.o
+src/common/library.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clangax_common.dir/build.make CMakeFiles/clangax_common.dir/src/common/library.cpp.o
+.PHONY : src/common/library.cpp.o
 
-irGenerator/irGenerator.i: irGenerator/irGenerator.cpp.i
-.PHONY : irGenerator/irGenerator.i
+src/common/library.i: src/common/library.cpp.i
+.PHONY : src/common/library.i
 
 # target to preprocess a source file
-irGenerator/irGenerator.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/irGenerator.dir/build.make CMakeFiles/irGenerator.dir/irGenerator/irGenerator.cpp.i
-.PHONY : irGenerator/irGenerator.cpp.i
+src/common/library.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clangax_common.dir/build.make CMakeFiles/clangax_common.dir/src/common/library.cpp.i
+.PHONY : src/common/library.cpp.i
 
-irGenerator/irGenerator.s: irGenerator/irGenerator.cpp.s
-.PHONY : irGenerator/irGenerator.s
+src/common/library.s: src/common/library.cpp.s
+.PHONY : src/common/library.s
 
 # target to generate assembly for a file
-irGenerator/irGenerator.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/irGenerator.dir/build.make CMakeFiles/irGenerator.dir/irGenerator/irGenerator.cpp.s
-.PHONY : irGenerator/irGenerator.cpp.s
+src/common/library.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clangax_common.dir/build.make CMakeFiles/clangax_common.dir/src/common/library.cpp.s
+.PHONY : src/common/library.cpp.s
 
-lexicalAnalyzer/lexical_analyzer.o: lexicalAnalyzer/lexical_analyzer.cpp.o
-.PHONY : lexicalAnalyzer/lexical_analyzer.o
+src/compiler/bytecodeGen.o: src/compiler/bytecodeGen.cpp.o
+.PHONY : src/compiler/bytecodeGen.o
 
 # target to build an object file
-lexicalAnalyzer/lexical_analyzer.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/lexicalAnalyzer.dir/build.make CMakeFiles/lexicalAnalyzer.dir/lexicalAnalyzer/lexical_analyzer.cpp.o
-.PHONY : lexicalAnalyzer/lexical_analyzer.cpp.o
+src/compiler/bytecodeGen.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clangax.dir/build.make CMakeFiles/clangax.dir/src/compiler/bytecodeGen.cpp.o
+.PHONY : src/compiler/bytecodeGen.cpp.o
 
-lexicalAnalyzer/lexical_analyzer.i: lexicalAnalyzer/lexical_analyzer.cpp.i
-.PHONY : lexicalAnalyzer/lexical_analyzer.i
+src/compiler/bytecodeGen.i: src/compiler/bytecodeGen.cpp.i
+.PHONY : src/compiler/bytecodeGen.i
 
 # target to preprocess a source file
-lexicalAnalyzer/lexical_analyzer.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/lexicalAnalyzer.dir/build.make CMakeFiles/lexicalAnalyzer.dir/lexicalAnalyzer/lexical_analyzer.cpp.i
-.PHONY : lexicalAnalyzer/lexical_analyzer.cpp.i
+src/compiler/bytecodeGen.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clangax.dir/build.make CMakeFiles/clangax.dir/src/compiler/bytecodeGen.cpp.i
+.PHONY : src/compiler/bytecodeGen.cpp.i
 
-lexicalAnalyzer/lexical_analyzer.s: lexicalAnalyzer/lexical_analyzer.cpp.s
-.PHONY : lexicalAnalyzer/lexical_analyzer.s
+src/compiler/bytecodeGen.s: src/compiler/bytecodeGen.cpp.s
+.PHONY : src/compiler/bytecodeGen.s
 
 # target to generate assembly for a file
-lexicalAnalyzer/lexical_analyzer.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/lexicalAnalyzer.dir/build.make CMakeFiles/lexicalAnalyzer.dir/lexicalAnalyzer/lexical_analyzer.cpp.s
-.PHONY : lexicalAnalyzer/lexical_analyzer.cpp.s
+src/compiler/bytecodeGen.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clangax.dir/build.make CMakeFiles/clangax.dir/src/compiler/bytecodeGen.cpp.s
+.PHONY : src/compiler/bytecodeGen.cpp.s
 
-parser/parser.o: parser/parser.cpp.o
-.PHONY : parser/parser.o
+src/compiler/clangax.o: src/compiler/clangax.cpp.o
+.PHONY : src/compiler/clangax.o
 
 # target to build an object file
-parser/parser.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/parser.dir/build.make CMakeFiles/parser.dir/parser/parser.cpp.o
-.PHONY : parser/parser.cpp.o
+src/compiler/clangax.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clangax.dir/build.make CMakeFiles/clangax.dir/src/compiler/clangax.cpp.o
+.PHONY : src/compiler/clangax.cpp.o
 
-parser/parser.i: parser/parser.cpp.i
-.PHONY : parser/parser.i
+src/compiler/clangax.i: src/compiler/clangax.cpp.i
+.PHONY : src/compiler/clangax.i
 
 # target to preprocess a source file
-parser/parser.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/parser.dir/build.make CMakeFiles/parser.dir/parser/parser.cpp.i
-.PHONY : parser/parser.cpp.i
+src/compiler/clangax.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clangax.dir/build.make CMakeFiles/clangax.dir/src/compiler/clangax.cpp.i
+.PHONY : src/compiler/clangax.cpp.i
 
-parser/parser.s: parser/parser.cpp.s
-.PHONY : parser/parser.s
+src/compiler/clangax.s: src/compiler/clangax.cpp.s
+.PHONY : src/compiler/clangax.s
 
 # target to generate assembly for a file
-parser/parser.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/parser.dir/build.make CMakeFiles/parser.dir/parser/parser.cpp.s
-.PHONY : parser/parser.cpp.s
+src/compiler/clangax.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clangax.dir/build.make CMakeFiles/clangax.dir/src/compiler/clangax.cpp.s
+.PHONY : src/compiler/clangax.cpp.s
 
-symbolTable/symbol_table.o: symbolTable/symbol_table.cpp.o
-.PHONY : symbolTable/symbol_table.o
+src/compiler/lexer.o: src/compiler/lexer.cpp.o
+.PHONY : src/compiler/lexer.o
 
 # target to build an object file
-symbolTable/symbol_table.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/symbolTable.dir/build.make CMakeFiles/symbolTable.dir/symbolTable/symbol_table.cpp.o
-.PHONY : symbolTable/symbol_table.cpp.o
+src/compiler/lexer.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clangax.dir/build.make CMakeFiles/clangax.dir/src/compiler/lexer.cpp.o
+.PHONY : src/compiler/lexer.cpp.o
 
-symbolTable/symbol_table.i: symbolTable/symbol_table.cpp.i
-.PHONY : symbolTable/symbol_table.i
+src/compiler/lexer.i: src/compiler/lexer.cpp.i
+.PHONY : src/compiler/lexer.i
 
 # target to preprocess a source file
-symbolTable/symbol_table.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/symbolTable.dir/build.make CMakeFiles/symbolTable.dir/symbolTable/symbol_table.cpp.i
-.PHONY : symbolTable/symbol_table.cpp.i
+src/compiler/lexer.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clangax.dir/build.make CMakeFiles/clangax.dir/src/compiler/lexer.cpp.i
+.PHONY : src/compiler/lexer.cpp.i
 
-symbolTable/symbol_table.s: symbolTable/symbol_table.cpp.s
-.PHONY : symbolTable/symbol_table.s
+src/compiler/lexer.s: src/compiler/lexer.cpp.s
+.PHONY : src/compiler/lexer.s
 
 # target to generate assembly for a file
-symbolTable/symbol_table.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/symbolTable.dir/build.make CMakeFiles/symbolTable.dir/symbolTable/symbol_table.cpp.s
-.PHONY : symbolTable/symbol_table.cpp.s
+src/compiler/lexer.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clangax.dir/build.make CMakeFiles/clangax.dir/src/compiler/lexer.cpp.s
+.PHONY : src/compiler/lexer.cpp.s
+
+src/compiler/parser.o: src/compiler/parser.cpp.o
+.PHONY : src/compiler/parser.o
+
+# target to build an object file
+src/compiler/parser.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clangax.dir/build.make CMakeFiles/clangax.dir/src/compiler/parser.cpp.o
+.PHONY : src/compiler/parser.cpp.o
+
+src/compiler/parser.i: src/compiler/parser.cpp.i
+.PHONY : src/compiler/parser.i
+
+# target to preprocess a source file
+src/compiler/parser.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clangax.dir/build.make CMakeFiles/clangax.dir/src/compiler/parser.cpp.i
+.PHONY : src/compiler/parser.cpp.i
+
+src/compiler/parser.s: src/compiler/parser.cpp.s
+.PHONY : src/compiler/parser.s
+
+# target to generate assembly for a file
+src/compiler/parser.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clangax.dir/build.make CMakeFiles/clangax.dir/src/compiler/parser.cpp.s
+.PHONY : src/compiler/parser.cpp.s
+
+src/vm/caxdis.o: src/vm/caxdis.cpp.o
+.PHONY : src/vm/caxdis.o
+
+# target to build an object file
+src/vm/caxdis.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/caxdis.dir/build.make CMakeFiles/caxdis.dir/src/vm/caxdis.cpp.o
+.PHONY : src/vm/caxdis.cpp.o
+
+src/vm/caxdis.i: src/vm/caxdis.cpp.i
+.PHONY : src/vm/caxdis.i
+
+# target to preprocess a source file
+src/vm/caxdis.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/caxdis.dir/build.make CMakeFiles/caxdis.dir/src/vm/caxdis.cpp.i
+.PHONY : src/vm/caxdis.cpp.i
+
+src/vm/caxdis.s: src/vm/caxdis.cpp.s
+.PHONY : src/vm/caxdis.s
+
+# target to generate assembly for a file
+src/vm/caxdis.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/caxdis.dir/build.make CMakeFiles/caxdis.dir/src/vm/caxdis.cpp.s
+.PHONY : src/vm/caxdis.cpp.s
+
+src/vm/caxvm.o: src/vm/caxvm.cpp.o
+.PHONY : src/vm/caxvm.o
+
+# target to build an object file
+src/vm/caxvm.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/caxvm.dir/build.make CMakeFiles/caxvm.dir/src/vm/caxvm.cpp.o
+.PHONY : src/vm/caxvm.cpp.o
+
+src/vm/caxvm.i: src/vm/caxvm.cpp.i
+.PHONY : src/vm/caxvm.i
+
+# target to preprocess a source file
+src/vm/caxvm.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/caxvm.dir/build.make CMakeFiles/caxvm.dir/src/vm/caxvm.cpp.i
+.PHONY : src/vm/caxvm.cpp.i
+
+src/vm/caxvm.s: src/vm/caxvm.cpp.s
+.PHONY : src/vm/caxvm.s
+
+# target to generate assembly for a file
+src/vm/caxvm.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/caxvm.dir/build.make CMakeFiles/caxvm.dir/src/vm/caxvm.cpp.s
+.PHONY : src/vm/caxvm.cpp.s
 
 # Help Target
 help:
@@ -475,35 +417,34 @@ help:
 	@echo "... install/strip"
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
-	@echo "... acc_gen"
-	@echo "... clean-generated"
-	@echo "... create-example"
-	@echo "... intrinsics_gen"
-	@echo "... omp_gen"
-	@echo "... target_parser_gen"
-	@echo "... test"
-	@echo "... test-compile"
-	@echo "... vt_gen"
+	@echo "... caxdis"
+	@echo "... caxvm"
 	@echo "... clangax"
-	@echo "... irGenerator"
-	@echo "... lexicalAnalyzer"
-	@echo "... parser"
-	@echo "... symbolTable"
-	@echo "... clangax.o"
-	@echo "... clangax.i"
-	@echo "... clangax.s"
-	@echo "... irGenerator/irGenerator.o"
-	@echo "... irGenerator/irGenerator.i"
-	@echo "... irGenerator/irGenerator.s"
-	@echo "... lexicalAnalyzer/lexical_analyzer.o"
-	@echo "... lexicalAnalyzer/lexical_analyzer.i"
-	@echo "... lexicalAnalyzer/lexical_analyzer.s"
-	@echo "... parser/parser.o"
-	@echo "... parser/parser.i"
-	@echo "... parser/parser.s"
-	@echo "... symbolTable/symbol_table.o"
-	@echo "... symbolTable/symbol_table.i"
-	@echo "... symbolTable/symbol_table.s"
+	@echo "... clangax_common"
+	@echo "... src/common/gpu_detect.o"
+	@echo "... src/common/gpu_detect.i"
+	@echo "... src/common/gpu_detect.s"
+	@echo "... src/common/library.o"
+	@echo "... src/common/library.i"
+	@echo "... src/common/library.s"
+	@echo "... src/compiler/bytecodeGen.o"
+	@echo "... src/compiler/bytecodeGen.i"
+	@echo "... src/compiler/bytecodeGen.s"
+	@echo "... src/compiler/clangax.o"
+	@echo "... src/compiler/clangax.i"
+	@echo "... src/compiler/clangax.s"
+	@echo "... src/compiler/lexer.o"
+	@echo "... src/compiler/lexer.i"
+	@echo "... src/compiler/lexer.s"
+	@echo "... src/compiler/parser.o"
+	@echo "... src/compiler/parser.i"
+	@echo "... src/compiler/parser.s"
+	@echo "... src/vm/caxdis.o"
+	@echo "... src/vm/caxdis.i"
+	@echo "... src/vm/caxdis.s"
+	@echo "... src/vm/caxvm.o"
+	@echo "... src/vm/caxvm.i"
+	@echo "... src/vm/caxvm.s"
 .PHONY : help
 
 

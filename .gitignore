@@ -1,17 +1,9 @@
-# CLion files
+# CLion
 .idea/
-cmake-build-debug/.cmake
-cmake-build-debug/CMakeFiles
-cmake-build-debug/Testing
 
-# Build artifacts
-*.exe
-*.out
-lexical_analyzer
+# CMake / builds
+build/
+cmake-build-*/
 
-# macOS
+# OS junk
 .DS_Store
-
-# Output files (optional)
-lexicalAnalyzer/lexical_report.txt
-.vscode/tasks.json

@@ -1,211 +1,116 @@
-cmake_minimum_required(VERSION 3.10)
-project(cmake-build-debug/clangax)
+cmake_minimum_required(VERSION 3.15)
+project(ClangAX VERSION 1.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-# ============================================
-# LLVM CONFIGURATION (Homebrew LLVM)
-# ============================================
-set(LLVM_DIR "/opt/homebrew/opt/llvm" CACHE PATH "Path to LLVM installation")
+# Compiler flags
+if(MSVC)
+    add_compile_options(/W4)
+else()
+    add_compile_options(-Wall -Wextra -pedantic)
+endif()
 
-find_package(LLVM REQUIRED CONFIG
-        PATHS ${LLVM_DIR}/lib/cmake/llvm
-        NO_DEFAULT_PATH)
+# Include directories
+include_directories(${CMAKE_SOURCE_DIR}/src/common)
 
-message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
-message(STATUS "LLVM Config: ${LLVM_DIR}")
-message(STATUS "LLVM Include dirs: ${LLVM_INCLUDE_DIRS}")
-message(STATUS "LLVM Library dirs: ${LLVM_LIBRARY_DIRS}")
-message(STATUS "LLVM Definitions: ${LLVM_DEFINITIONS}")
-
-# ============================================
-# INCLUDE DIRECTORIES
-# ============================================
-include_directories(${LLVM_INCLUDE_DIRS})
-include_directories(${LLVM_DIR}/lib/clang/19/include)   # <-- IMPORTANT
-add_definitions(${LLVM_DEFINITIONS})
-add_definitions(-DLLVM_ENABLE_RTTI)                      # <-- REQUIRED for dynamic_cast
-
-# ============================================
-# LINK LLVM COMPONENTS
-# ============================================
-llvm_map_components_to_libnames(llvm_libs
-        core
-        irreader
-        support
-        analysis
-        instcombine
-        scalaropts
-        native
-        object
-        orcjit
-        runtimedyld
-        mc
-        mcparser
-        bitreader
-        bitwriter
-        passes
-        transformutils
-        asmparser
+# =============================================================================
+# COMMON LIBRARY (shared code)
+# =============================================================================
+add_library(clangax_common STATIC
+        src/common/library.cpp
+        src/common/gpu_detect.cpp
 )
 
-# ============================================
-# PROJECT INCLUDES
-# ============================================
-include_directories(${CMAKE_SOURCE_DIR})
-
-# ============================================
-# EXECUTABLES
-# ============================================
-
-# Lexical Analyzer
-add_executable(lexicalAnalyzer
-        lexicalAnalyzer/lexical_analyzer.cpp
+target_include_directories(clangax_common PUBLIC
+        ${CMAKE_SOURCE_DIR}/src/common
 )
 
-# Symbol Table Generator
-add_executable(symbolTable
-        symbolTable/symbol_table.cpp
-)
-
-# Parser
-add_executable(parser
-        parser/parser.cpp
-)
-
-# IR Generator
-add_executable(irGenerator
-        irGenerator/irGenerator.cpp
-)
-target_include_directories(irGenerator PRIVATE ${CMAKE_SOURCE_DIR}/parser)
-target_link_libraries(irGenerator ${llvm_libs})
-
-# ============================================
-# CLANGAX - Main Compiler Driver
-# ============================================
+# =============================================================================
+# COMPILER EXECUTABLE (clangax)
+# =============================================================================
 add_executable(clangax
-        clangax.cpp
+        src/compiler/clangax.cpp
+        src/compiler/lexer.cpp
+        src/compiler/parser.cpp
+        src/compiler/bytecodeGen.cpp
 )
 
-# ============================================
-# COMPILER WARNINGS / OPTIMIZATIONS
-# ============================================
-if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(lexicalAnalyzer PRIVATE -Wall -Wextra -O2)
-    target_compile_options(symbolTable PRIVATE -Wall -Wextra -O2)
-    target_compile_options(parser PRIVATE -Wall -Wextra -O2)
-    target_compile_options(irGenerator PRIVATE -Wall -Wextra -O2)
-    target_compile_options(clangax PRIVATE -Wall -Wextra -O2)
+target_include_directories(clangax PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/common
+        ${CMAKE_SOURCE_DIR}/src/compiler
+)
+
+# Link with common library
+target_link_libraries(clangax PRIVATE clangax_common)
+
+# =============================================================================
+# VIRTUAL MACHINE EXECUTABLE (caxvm)
+# =============================================================================
+add_executable(caxvm
+        src/vm/caxvm.cpp
+)
+
+target_include_directories(caxvm PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/common
+)
+
+# Link with common library
+target_link_libraries(caxvm PRIVATE clangax_common)
+
+# Platform-specific libraries for dynamic loading (used by gpu_detect)
+if(UNIX AND NOT APPLE)
+    target_link_libraries(caxvm PRIVATE dl)
 endif()
 
-# ============================================
+# =============================================================================
+# DISASSEMBLER (caxdis)
+# =============================================================================
+add_executable(caxdis
+        src/vm/caxdis.cpp
+)
+
+target_include_directories(caxdis PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/common
+)
+
+# Link with common library
+target_link_libraries(caxdis PRIVATE clangax_common)
+
+# =============================================================================
 # INSTALL TARGETS
-# ============================================
-install(TARGETS lexicalAnalyzer symbolTable parser irGenerator clangax
+# =============================================================================
+install(TARGETS clangax caxvm caxdis
         RUNTIME DESTINATION bin
 )
 
-# ============================================
-# CUSTOM TARGETS FOR CONVENIENCE
-# ============================================
-
-# Test target - compile and run SampleCode.cax
-add_custom_target(test
-        COMMAND ${CMAKE_COMMAND} -E echo "Converting SampleCode.txt to SampleCode.cax..."
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_SOURCE_DIR}/SampleCode.txt
-        ${CMAKE_BINARY_DIR}/SampleCode.cax
-        COMMAND ${CMAKE_COMMAND} -E echo "Compiling SampleCode.cax..."
-        COMMAND ${CMAKE_BINARY_DIR}/clangax ${CMAKE_BINARY_DIR}/SampleCode.cax -o test_program -v
-        COMMAND ${CMAKE_COMMAND} -E echo ""
-        COMMAND ${CMAKE_COMMAND} -E echo "Running compiled program:"
-        COMMAND ${CMAKE_COMMAND} -E echo "========================================"
-        COMMAND ${CMAKE_BINARY_DIR}/test_program
-        DEPENDS cmake-build-debug/clangax lexicalAnalyzer parser symbolTable cmake-build-debug/irGenerator
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        COMMENT "Testing clangax compiler with SampleCode.cax"
+# Optional: Install library headers for external use
+install(FILES
+        src/common/ast.h
+        src/common/opcodes.h
+        src/common/bytecode.h
+        src/common/library.h
+        src/common/gpu_detect.h
+        DESTINATION include/clangax
 )
 
-# Quick test target - just compile, don't run
-add_custom_target(test-compile
-        COMMAND ${CMAKE_COMMAND} -E echo "Converting SampleCode.txt to SampleCode.cax..."
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_SOURCE_DIR}/SampleCode.txt
-        ${CMAKE_BINARY_DIR}/SampleCode.cax
-        COMMAND ${CMAKE_COMMAND} -E echo "Compiling SampleCode.cax..."
-        COMMAND ${CMAKE_BINARY_DIR}/clangax ${CMAKE_BINARY_DIR}/SampleCode.cax -o test_program -v
-        DEPENDS cmake-build-debug/clangax lexicalAnalyzer parser symbolTable cmake-build-debug/irGenerator
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        COMMENT "Testing clangax compiler (compile only)"
-)
-
-# Clean target for generated files
-add_custom_target(clean-generated
-        COMMAND ${CMAKE_COMMAND} -E echo "Cleaning generated files..."
-        COMMAND ${CMAKE_COMMAND} -E remove -f
-        ${CMAKE_BINARY_DIR}/lexical_report.txt
-        ${CMAKE_BINARY_DIR}/parser/parse_report.txt
-        ${CMAKE_BINARY_DIR}/parser/parse_tree.txt
-        ${CMAKE_BINARY_DIR}/symbol_table.csv
-        ${CMAKE_BINARY_DIR}/symbol_table_report.txt
-        ${CMAKE_BINARY_DIR}/irGenerator/output.ll
-        ${CMAKE_BINARY_DIR}/*.ll
-        ${CMAKE_BINARY_DIR}/test_program
-        ${CMAKE_BINARY_DIR}/SampleCode.cax
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        COMMENT "Removing all generated compilation artifacts"
-)
-
-# Create example .cax file
-add_custom_target(create-example
-        COMMAND ${CMAKE_COMMAND} -E echo "Creating hello.cax example..."
-        COMMAND ${CMAKE_COMMAND} -E echo "// hello.cax - Simple C-Accel program" > ${CMAKE_BINARY_DIR}/hello.cax
-        COMMAND ${CMAKE_COMMAND} -E echo "" >> ${CMAKE_BINARY_DIR}/hello.cax
-        COMMAND ${CMAKE_COMMAND} -E echo "#import \"Sample\"" >> ${CMAKE_BINARY_DIR}/hello.cax
-        COMMAND ${CMAKE_COMMAND} -E echo "" >> ${CMAKE_BINARY_DIR}/hello.cax
-        COMMAND ${CMAKE_COMMAND} -E echo "func(Main) {" >> ${CMAKE_BINARY_DIR}/hello.cax
-        COMMAND ${CMAKE_COMMAND} -E echo "    print(\"Hello, C-Accel!\")" >> ${CMAKE_BINARY_DIR}/hello.cax
-        COMMAND ${CMAKE_COMMAND} -E echo "    print(\"Compilation successful!\")" >> ${CMAKE_BINARY_DIR}/hello.cax
-        COMMAND ${CMAKE_COMMAND} -E echo "}" >> ${CMAKE_BINARY_DIR}/hello.cax
-        COMMAND ${CMAKE_COMMAND} -E echo "Created: ${CMAKE_BINARY_DIR}/hello.cax"
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        COMMENT "Creating example hello.cax file"
-)
-
-# Print build info
+# =============================================================================
+# BUILD SUMMARY
+# =============================================================================
 message(STATUS "")
-message(STATUS "========================================")
-message(STATUS "  C-Accel Compiler (clangax) Build")
-message(STATUS "========================================")
-message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
-message(STATUS "C++ compiler: ${CMAKE_CXX_COMPILER}")
-message(STATUS "C++ standard: ${CMAKE_CXX_STANDARD}")
+message(STATUS "ClangAX Toolchain Configuration")
+message(STATUS "================================")
+message(STATUS "Version:      ${PROJECT_VERSION}")
+message(STATUS "Compiler:     clangax (NO LLVM DEPENDENCY)")
+message(STATUS "VM:           caxvm")
+message(STATUS "Disassembler: caxdis")
+message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")
+message(STATUS "Build Type:   ${CMAKE_BUILD_TYPE}")
 message(STATUS "")
-message(STATUS "Executables will be built:")
-message(STATUS "  - clangax (main driver)")
-message(STATUS "  - lexicalAnalyzer")
-message(STATUS "  - parser")
-message(STATUS "  - symbolTable")
-message(STATUS "  - irGenerator")
+message(STATUS "Standard Libraries:")
+message(STATUS "  _math    - Mathematical operations")
+message(STATUS "  _datastr - Data structures")
+message(STATUS "  _alg     - Algorithms")
+message(STATUS "  _ml      - Machine learning")
 message(STATUS "")
-message(STATUS "Custom targets available:")
-message(STATUS "  make test           - Build and test with SampleCode.cax")
-message(STATUS "  make test-compile   - Test compilation only (don't run)")
-message(STATUS "  make clean-generated - Remove generated files")
-message(STATUS "  make create-example - Create hello.cax example")
-message(STATUS "========================================")
-message(STATUS "")
-
-# ============================================
-# CLANGAX - Main Compiler Driver
-# ============================================
-
-if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(clangax PRIVATE -Wall -Wextra -O2)
-endif()
-
-# Update install target to include clangax
-install(TARGETS lexicalAnalyzer symbolTable parser irGenerator clangax
-        RUNTIME DESTINATION bin
-)

@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="${PROJECT_ROOT}/cmake-build-debug"
 BIN_DIR="${HOME}/.local/bin"
 
-echo "== clangAX installer =="
 echo "Project root : ${PROJECT_ROOT}"
 echo "Build dir    : ${BUILD_DIR}"
 echo "Install dir  : ${BIN_DIR}"
@@ -15,39 +13,36 @@ echo
 # --- Safety checks ---
 if [[ ! -d "${BUILD_DIR}" ]]; then
   echo "ERROR: Build directory not found: ${BUILD_DIR}"
-  echo "Build first, e.g.: cmake --build cmake-build-debug"
   exit 1
 fi
 
-if [[ ! -x "${BUILD_DIR}/clangax" ]]; then
-  echo "ERROR: Compiled clangax binary not found/executable: ${BUILD_DIR}/clangax"
-  echo "Build first, e.g.: cmake --build cmake-build-debug"
-  exit 1
-fi
-
-# Tools your compiler expects to run
-TOOLS=(irGenerator lexicalAnalyzer parser symbolTable)
+# Executables we need (NO LLVM TOOLS!)
+REQUIRED_BINS=(clangax caxvm)
 
 missing=0
-for t in "${TOOLS[@]}"; do
-  if [[ ! -x "${BUILD_DIR}/${t}" ]]; then
-    echo "ERROR: Missing executable in build dir: ${BUILD_DIR}/${t}"
+for tool in "${REQUIRED_BINS[@]}"; do
+  if [[ ! -x "${BUILD_DIR}/${tool}" ]]; then
+    echo "ERROR: Missing executable: ${BUILD_DIR}/${tool}"
     missing=1
   fi
 done
+
 if [[ "${missing}" -ne 0 ]]; then
   echo
-  echo "One or more tool executables are missing."
-  echo "Build first, e.g.: cmake --build cmake-build-debug"
+  echo "One or more executables are missing."
   exit 1
 fi
 
+echo "All binaries found"
+echo
+
+# Create bin directory if it doesn't exist
 mkdir -p "${BIN_DIR}"
 
-# --- Install wrapper as ~/.local/bin/clangax ---
-WRAPPER_PATH="${BIN_DIR}/clangax"
+# --- Install clangax wrapper ---
+CLANGAX_WRAPPER="${BIN_DIR}/clangax"
 
-cat > "${WRAPPER_PATH}" << 'EOF'
+cat > "${CLANGAX_WRAPPER}" << 'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -57,7 +52,7 @@ orig_pwd="$PWD"
 args=()
 input_done=0
 
-# Rewrite:
+# Rewrite paths to absolute:
 # - first non-flag argument = input file -> absolute if relative
 # - value after -o -> absolute if relative
 while [[ $# -gt 0 ]]; do
@@ -71,13 +66,15 @@ while [[ $# -gt 0 ]]; do
     fi
     out="$1"
     shift
+    # Make output path absolute
     if [[ "$out" != /* ]]; then out="$orig_pwd/$out"; fi
     args+=("-o" "$out")
     continue
   fi
 
+  # First non-flag argument is the input file
   if [[ $input_done -eq 0 && "$a" != -* ]]; then
-    # treat as input file
+    # Make input path absolute
     if [[ "$a" != /* ]]; then a="$orig_pwd/$a"; fi
     input_done=1
   fi
@@ -85,26 +82,91 @@ while [[ $# -gt 0 ]]; do
   args+=("$a")
 done
 
-cd "$BUILD_DIR"
-exec ./clangax "${args[@]}"
+# Execute the real compiler from build directory
+exec "$BUILD_DIR/clangax" "${args[@]}"
 EOF
 
-# Inject the real build dir (macOS sed -i needs a backup suffix; '' means none)
-sed -i '' "s|__BUILD_DIR__|${BUILD_DIR}|g" "${WRAPPER_PATH}"
-chmod +x "${WRAPPER_PATH}"
+# Inject the real build directory path
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  # macOS sed requires backup suffix
+  sed -i '' "s|__BUILD_DIR__|${BUILD_DIR}|g" "${CLANGAX_WRAPPER}"
+else
+  # Linux sed
+  sed -i "s|__BUILD_DIR__|${BUILD_DIR}|g" "${CLANGAX_WRAPPER}"
+fi
 
-echo "Installed wrapper: ${WRAPPER_PATH}"
+chmod +x "${CLANGAX_WRAPPER}"
+echo "Installed: ${CLANGAX_WRAPPER}"
 
-# --- Copy tool executables to ~/.local/bin (optional but handy) ---
-# IMPORTANT: we do NOT copy the clangax binary to clangax (would overwrite wrapper).
-for t in "${TOOLS[@]}"; do
-  cp -f "${BUILD_DIR}/${t}" "${BIN_DIR}/${t}"
-  chmod +x "${BIN_DIR}/${t}"
-  echo "Installed tool  : ${BIN_DIR}/${t}"
+# --- Install caxvm wrapper ---
+CAXVM_WRAPPER="${BIN_DIR}/caxvm"
+
+cat > "${CAXVM_WRAPPER}" << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+BUILD_DIR="__BUILD_DIR__"
+
+orig_pwd="$PWD"
+args=()
+
+# Make all .caxb file paths absolute
+for arg in "$@"; do
+  if [[ "$arg" == *.caxb && "$arg" != /* ]]; then
+    args+=("$orig_pwd/$arg")
+  else
+    args+=("$arg")
+  fi
 done
 
+exec "$BUILD_DIR/caxvm" "${args[@]}"
+EOF
+
+# Inject the real build directory path
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  sed -i '' "s|__BUILD_DIR__|${BUILD_DIR}|g" "${CAXVM_WRAPPER}"
+else
+  sed -i "s|__BUILD_DIR__|${BUILD_DIR}|g" "${CAXVM_WRAPPER}"
+fi
+
+chmod +x "${CAXVM_WRAPPER}"
+echo "Installed: ${CAXVM_WRAPPER}"
+
+# --- Optional: Install disassembler if built ---
+if [[ -x "${BUILD_DIR}/caxdis" ]]; then
+  CAXDIS_WRAPPER="${BIN_DIR}/caxdis"
+
+  cat > "${CAXDIS_WRAPPER}" << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+BUILD_DIR="__BUILD_DIR__"
+
+orig_pwd="$PWD"
+args=()
+
+for arg in "$@"; do
+  if [[ "$arg" == *.caxb && "$arg" != /* ]]; then
+    args+=("$orig_pwd/$arg")
+  else
+    args+=("$arg")
+  fi
+done
+
+exec "$BUILD_DIR/caxdis" "${args[@]}"
+EOF
+
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    sed -i '' "s|__BUILD_DIR__|${BUILD_DIR}|g" "${CAXDIS_WRAPPER}"
+  else
+    sed -i "s|__BUILD_DIR__|${BUILD_DIR}|g" "${CAXDIS_WRAPPER}"
+  fi
+
+  chmod +x "${CAXDIS_WRAPPER}"
+  echo "Installed: ${CAXDIS_WRAPPER}"
+fi
+
 echo
-echo "Done."
 
 # --- PATH setup (zsh + bash) ---
 ensure_path() {
@@ -116,23 +178,24 @@ ensure_path() {
 
   if ! grep -Fqs "$BIN_DIR" "$profile"; then
     echo >> "$profile"
-    echo "# Added by clangAX installer" >> "$profile"
+    echo "# Added by ClangAX installer" >> "$profile"
     echo "$line" >> "$profile"
     echo "Updated PATH in: $profile"
   else
-    echo "PATH already set in: $profile"
+    echo "PATH already configured in: $profile"
   fi
 }
 
+echo "Configuring shell PATH..."
 echo
-echo "Configuring PATH..."
 
 ensure_path "$HOME/.zshrc"
 ensure_path "$HOME/.bash_profile"
 
-echo
-echo "PATH configuration complete."
-echo "Restart your shell or run:"
-echo "  source ~/.zshrc   # for zsh"
-echo "  source ~/.bash_profile  # for bash"
-
+echo "Installation Complete!"
+echo "Installed tools:"
+echo "  * clangax - ClangAX bytecode compiler"
+echo "  * caxvm   - ClangAX virtual machine"
+if [[ -x "${BUILD_DIR}/caxdis" ]]; then
+  echo "  * caxdis  - Bytecode disassembler"
+fi
