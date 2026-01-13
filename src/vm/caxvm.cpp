@@ -303,19 +303,41 @@ private:
         return v;
     }
 
-    std::string stringify(const Value& v) {
+    // Add this in vm/caxvm.cpp in the ClangaxVM class private section
+    // Replace the existing stringify() method with this improved version:
+
+    std::string stringify(const Value& v, bool nested = false) {
         switch (v.tag) {
             case ValueTag::Null: return "null";
             case ValueTag::Int: return std::to_string(v.as.i);
             case ValueTag::Float: {
-                std::ostringstream os; os << v.as.f; return os.str();
+                std::ostringstream os;
+                os << v.as.f;
+                return os.str();
             }
             case ValueTag::Bool: return v.as.b ? "true" : "false";
             case ValueTag::String:
                 if (v.as.id < stringHeap.size()) return stringHeap[v.as.id];
                 return "";
-            case ValueTag::Array:
-                return "<array len=" + std::to_string(arrays.at(v.as.id)->elems.size()) + ">";
+            case ValueTag::Array: {
+                if (v.as.id >= arrays.size()) return "<invalid array>";
+                auto& arr = arrays.at(v.as.id)->elems;
+                
+                // For nested arrays or empty arrays, use compact notation
+                if (nested || arr.empty()) {
+                    return "<array len=" + std::to_string(arr.size()) + ">";
+                }
+                
+                // Pretty print array contents
+                std::ostringstream os;
+                os << "[";
+                for (size_t i = 0; i < arr.size(); i++) {
+                    if (i > 0) os << ", ";
+                    os << stringify(arr[i], true);  // nested=true to prevent deep recursion
+                }
+                os << "]";
+                return os.str();
+            }
             case ValueTag::Handle: {
                 std::string k = "handle";
                 switch (v.handleKind) {
