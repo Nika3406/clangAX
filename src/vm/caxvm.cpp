@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <cstring>
 #include <algorithm>
+#include <functional>
 #include <fstream>
 #include <iostream>
 #include <limits>
@@ -305,8 +306,12 @@ private:
 
     // Add this in vm/caxvm.cpp in the ClangaxVM class private section
     // Replace the existing stringify() method with this improved version:
-
-    std::string stringify(const Value& v, bool nested = false) {
+    std::string stringify(const Value& v, bool nested = false, int depth = 0) {
+        // Increase depth limit to 4 to show tree structures better
+        if (depth > 4) {
+            return "<...>";
+        }
+        
         switch (v.tag) {
             case ValueTag::Null: return "null";
             case ValueTag::Int: return std::to_string(v.as.i);
@@ -323,17 +328,22 @@ private:
                 if (v.as.id >= arrays.size()) return "<invalid array>";
                 auto& arr = arrays.at(v.as.id)->elems;
                 
-                // For nested arrays or empty arrays, use compact notation
-                if (nested || arr.empty()) {
+                // Show compact form for large arrays
+                if (arr.size() > 10) {
                     return "<array len=" + std::to_string(arr.size()) + ">";
                 }
                 
-                // Pretty print array contents
+                // Show compact form at deep nesting (but not at depth 2-3 for tree structures)
+                if (depth > 10) {
+                    return "<array len=" + std::to_string(arr.size()) + ">";
+                }
+                
+                // For everything else, show contents
                 std::ostringstream os;
                 os << "[";
                 for (size_t i = 0; i < arr.size(); i++) {
                     if (i > 0) os << ", ";
-                    os << stringify(arr[i], true);  // nested=true to prevent deep recursion
+                    os << stringify(arr[i], true, depth + 1);
                 }
                 os << "]";
                 return os.str();
@@ -717,6 +727,69 @@ private:
             return Value::fromFloat(std::sqrt(variance / arr.size()));
         }
 
+        if (op == "math.median") {
+            if (pos.empty() || pos[0].tag != ValueTag::Array) return Value::null();
+            auto& arr = arrays.at(pos[0].as.id)->elems;
+            if (arr.empty()) return Value::null();
+            
+            // Create a sorted copy
+            std::vector<float> sorted;
+            sorted.reserve(arr.size());
+            for (const auto& v : arr) {
+                sorted.push_back((v.tag == ValueTag::Float) ? v.as.f : static_cast<float>(v.as.i));
+            }
+            std::sort(sorted.begin(), sorted.end());
+            
+            // Calculate median
+            size_t n = sorted.size();
+            float median;
+            if (n % 2 == 0) {
+                median = (sorted[n/2 - 1] + sorted[n/2]) / 2.0f;
+            } else {
+                median = sorted[n/2];
+            }
+            
+            return Value::fromFloat(median);
+        }
+
+        if (op == "math.derivative") {
+            if (pos.size() < 2 || pos[0].tag != ValueTag::Array) return Value::null();
+            auto& arr = arrays.at(pos[0].as.id)->elems;
+            float h = (pos[1].tag == ValueTag::Float) ? pos[1].as.f : static_cast<float>(pos[1].as.i);
+            
+            if (arr.size() < 2 || h == 0) return Value::null();
+            
+            // Numerical derivative: f'(x) ≈ (f(x+h) - f(x)) / h
+            auto deriv = std::make_unique<Array>();
+            for (size_t i = 0; i < arr.size() - 1; i++) {
+                float yi = (arr[i].tag == ValueTag::Float) ? arr[i].as.f : static_cast<float>(arr[i].as.i);
+                float yi1 = (arr[i+1].tag == ValueTag::Float) ? arr[i+1].as.f : static_cast<float>(arr[i+1].as.i);
+                deriv->elems.push_back(Value::fromFloat((yi1 - yi) / h));
+            }
+            
+            uint32_t id = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(deriv));
+            return Value::fromArray(id);
+        }
+
+        if (op == "math.integral") {
+            if (pos.size() < 2 || pos[0].tag != ValueTag::Array) return Value::null();
+            auto& arr = arrays.at(pos[0].as.id)->elems;
+            float dx = (pos[1].tag == ValueTag::Float) ? pos[1].as.f : static_cast<float>(pos[1].as.i);
+            
+            if (arr.empty() || dx == 0) return Value::null();
+            
+            // Trapezoidal rule integration
+            float sum = 0.0f;
+            for (size_t i = 0; i < arr.size() - 1; i++) {
+                float yi = (arr[i].tag == ValueTag::Float) ? arr[i].as.f : static_cast<float>(arr[i].as.i);
+                float yi1 = (arr[i+1].tag == ValueTag::Float) ? arr[i+1].as.f : static_cast<float>(arr[i+1].as.i);
+                sum += (yi + yi1) / 2.0f * dx;
+            }
+            
+            return Value::fromFloat(sum);
+        }
+
         // =============================================================================
         // _DATASTR LIBRARY IMPLEMENTATIONS
         // =============================================================================
@@ -854,6 +927,315 @@ private:
             return min;
         }
 
+        if (op == "datastr.heap_peek") {
+            if (pos.empty() || pos[0].tag != ValueTag::Array) return Value::null();
+            auto& heap = arrays.at(pos[0].as.id)->elems;
+            if (heap.empty()) return Value::null();
+            return heap[0];
+        }
+
+        if (op == "datastr.map_delete") {
+            if (pos.size() < 2 || pos[0].tag != ValueTag::Array) return Value::null();
+            auto& map = arrays.at(pos[0].as.id)->elems;
+            std::string key = stringify(pos[1]);
+            
+            // Map stored as [key1, val1, key2, val2, ...]
+            for (size_t i = 0; i < map.size(); i += 2) {
+                if (stringify(map[i]) == key) {
+                    map.erase(map.begin() + i, map.begin() + i + 2);
+                    return Value::fromBool(true);
+                }
+            }
+            return Value::fromBool(false);
+        }
+
+        if (op == "datastr.map_keys") {
+            if (pos.empty() || pos[0].tag != ValueTag::Array) return Value::null();
+            auto& map = arrays.at(pos[0].as.id)->elems;
+            
+            auto keys = std::make_unique<Array>();
+            for (size_t i = 0; i < map.size(); i += 2) {
+                keys->elems.push_back(map[i]);
+            }
+            
+            uint32_t id = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(keys));
+            return Value::fromArray(id);
+        }
+
+        if (op == "datastr.set_new") {
+            auto arr = std::make_unique<Array>();
+            uint32_t id = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(arr));
+            return Value::fromArray(id);
+        }
+
+        if (op == "datastr.set_add") {
+            if (pos.size() < 2 || pos[0].tag != ValueTag::Array) return Value::null();
+            auto& set = arrays.at(pos[0].as.id)->elems;
+            
+            // Check if value already exists
+            std::string valStr = stringify(pos[1]);
+            for (const auto& elem : set) {
+                if (stringify(elem) == valStr) return Value::null();
+            }
+            
+            set.push_back(pos[1]);
+            return Value::null();
+        }
+
+        if (op == "datastr.set_has") {
+            if (pos.size() < 2 || pos[0].tag != ValueTag::Array) return Value::fromBool(false);
+            auto& set = arrays.at(pos[0].as.id)->elems;
+            
+            std::string valStr = stringify(pos[1]);
+            for (const auto& elem : set) {
+                if (stringify(elem) == valStr) return Value::fromBool(true);
+            }
+            return Value::fromBool(false);
+        }
+
+        if (op == "datastr.set_delete") {
+            if (pos.size() < 2 || pos[0].tag != ValueTag::Array) return Value::fromBool(false);
+            auto& set = arrays.at(pos[0].as.id)->elems;
+            
+            std::string valStr = stringify(pos[1]);
+            for (size_t i = 0; i < set.size(); i++) {
+                if (stringify(set[i]) == valStr) {
+                    set.erase(set.begin() + i);
+                    return Value::fromBool(true);
+                }
+            }
+            return Value::fromBool(false);
+        }
+
+        if (op == "datastr.set_union") {
+            if (pos.size() < 2 || pos[0].tag != ValueTag::Array || pos[1].tag != ValueTag::Array) {
+                return Value::null();
+            }
+            
+            auto& set1 = arrays.at(pos[0].as.id)->elems;
+            auto& set2 = arrays.at(pos[1].as.id)->elems;
+            
+            auto result = std::make_unique<Array>();
+            std::unordered_set<std::string> seen;
+            
+            for (const auto& elem : set1) {
+                std::string s = stringify(elem);
+                if (seen.insert(s).second) {
+                    result->elems.push_back(elem);
+                }
+            }
+            
+            for (const auto& elem : set2) {
+                std::string s = stringify(elem);
+                if (seen.insert(s).second) {
+                    result->elems.push_back(elem);
+                }
+            }
+            
+            uint32_t id = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(result));
+            return Value::fromArray(id);
+        }
+
+        if (op == "datastr.set_intersect") {
+            if (pos.size() < 2 || pos[0].tag != ValueTag::Array || pos[1].tag != ValueTag::Array) {
+                return Value::null();
+            }
+            
+            auto& set1 = arrays.at(pos[0].as.id)->elems;
+            auto& set2 = arrays.at(pos[1].as.id)->elems;
+            
+            std::unordered_set<std::string> set2Strs;
+            for (const auto& elem : set2) {
+                set2Strs.insert(stringify(elem));
+            }
+            
+            auto result = std::make_unique<Array>();
+            for (const auto& elem : set1) {
+                if (set2Strs.count(stringify(elem))) {
+                    result->elems.push_back(elem);
+                }
+            }
+            
+            uint32_t id = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(result));
+            return Value::fromArray(id);
+        }
+
+        if (op == "datastr.list_new") {
+            auto arr = std::make_unique<Array>();
+            uint32_t id = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(arr));
+            return Value::fromArray(id);
+        }
+
+        if (op == "datastr.list_append") {
+            if (pos.size() < 2 || pos[0].tag != ValueTag::Array) return Value::null();
+            arrays.at(pos[0].as.id)->elems.push_back(pos[1]);
+            return Value::null();
+        }
+
+        if (op == "datastr.list_prepend") {
+            if (pos.size() < 2 || pos[0].tag != ValueTag::Array) return Value::null();
+            arrays.at(pos[0].as.id)->elems.insert(arrays.at(pos[0].as.id)->elems.begin(), pos[1]);
+            return Value::null();
+        }
+
+        if (op == "datastr.list_get") {
+            if (pos.size() < 2 || pos[0].tag != ValueTag::Array) return Value::null();
+            auto& list = arrays.at(pos[0].as.id)->elems;
+            int32_t idx = (pos[1].tag == ValueTag::Int) ? pos[1].as.i : 0;
+            
+            if (idx < 0 || static_cast<size_t>(idx) >= list.size()) return Value::null();
+            return list[idx];
+        }
+
+        if (op == "datastr.list_insert") {
+            if (pos.size() < 3 || pos[0].tag != ValueTag::Array) return Value::null();
+            auto& list = arrays.at(pos[0].as.id)->elems;
+            int32_t idx = (pos[1].tag == ValueTag::Int) ? pos[1].as.i : 0;
+            
+            if (idx < 0 || static_cast<size_t>(idx) > list.size()) return Value::null();
+            list.insert(list.begin() + idx, pos[2]);
+            return Value::null();
+        }
+
+        if (op == "datastr.list_remove") {
+            if (pos.size() < 2 || pos[0].tag != ValueTag::Array) return Value::null();
+            auto& list = arrays.at(pos[0].as.id)->elems;
+            int32_t idx = (pos[1].tag == ValueTag::Int) ? pos[1].as.i : 0;
+            
+            if (idx < 0 || static_cast<size_t>(idx) >= list.size()) return Value::null();
+            list.erase(list.begin() + idx);
+            return Value::null();
+        }
+        
+        // In the dispatchExec function, add these cases:
+        if (op == "datastr.graph_new") {
+            auto arr = std::make_unique<Array>();
+            uint32_t id = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(arr));
+            return Value::fromArray(id);
+        }
+
+        if (op == "datastr.graph_add_vertex") {
+            if (pos.size() < 2 || pos[0].tag != ValueTag::Array) return Value::null();
+            auto& graph = arrays.at(pos[0].as.id)->elems;
+            
+            // Add vertex with empty edge list
+            graph.push_back(pos[1]);  // vertex name
+            
+            auto edges = std::make_unique<Array>();
+            uint32_t edgesId = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(edges));
+            graph.push_back(Value::fromArray(edgesId));
+            
+            return Value::null();
+        }
+
+        if (op == "datastr.graph_add_edge") {
+            if (pos.size() < 4 || pos[0].tag != ValueTag::Array) return Value::null();
+            auto& graph = arrays.at(pos[0].as.id)->elems;
+            
+            std::string from = stringify(pos[1]);
+            std::string to = stringify(pos[2]);
+            float weight = (pos[3].tag == ValueTag::Float) ? pos[3].as.f : static_cast<float>(pos[3].as.i);
+            
+            // Find the "from" vertex and add edge to its edge list
+            for (size_t i = 0; i < graph.size(); i += 2) {
+                if (stringify(graph[i]) == from && i + 1 < graph.size() && graph[i+1].tag == ValueTag::Array) {
+                    auto& edges = arrays.at(graph[i+1].as.id)->elems;
+                    
+                    // Edge format: [destination, weight]
+                    auto edge = std::make_unique<Array>();
+                    
+                    uint32_t toSid = static_cast<uint32_t>(stringHeap.size());
+                    stringHeap.push_back(to);
+                    edge->elems.push_back(Value::fromString(toSid));
+                    edge->elems.push_back(Value::fromFloat(weight));
+                    
+                    uint32_t edgeId = static_cast<uint32_t>(arrays.size());
+                    arrays.push_back(std::move(edge));
+                    edges.push_back(Value::fromArray(edgeId));
+                    
+                    break;
+                }
+            }
+            
+            return Value::null();
+        }
+
+        if (op == "datastr.graph_neighbors") {
+            if (pos.size() < 2 || pos[0].tag != ValueTag::Array) return Value::null();
+            auto& graph = arrays.at(pos[0].as.id)->elems;
+            
+            // Graph format: [vertex1, [edges], vertex2, [edges], ...]
+            std::string vertex = stringify(pos[1]);
+            
+            for (size_t i = 0; i < graph.size(); i += 2) {
+                if (stringify(graph[i]) == vertex && i + 1 < graph.size()) {
+                    return graph[i + 1];  // Return edges array
+                }
+            }
+            
+            // Return empty array if vertex not found
+            auto empty = std::make_unique<Array>();
+            uint32_t id = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(empty));
+            return Value::fromArray(id);
+        }
+
+        if (op == "datastr.tree_new") {
+            if (pos.empty()) return Value::null();
+            
+            // Tree node: [value, [children]]
+            auto node = std::make_unique<Array>();
+            node->elems.push_back(pos[0]);  // value
+            
+            auto children = std::make_unique<Array>();
+            uint32_t childrenId = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(children));
+            node->elems.push_back(Value::fromArray(childrenId));
+            
+            uint32_t id = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(node));
+            return Value::fromArray(id);
+        }
+
+        if (op == "datastr.tree_add_child") {
+            if (pos.size() < 2 || pos[0].tag != ValueTag::Array) return Value::null();
+            auto& node = arrays.at(pos[0].as.id)->elems;
+            
+            if (node.size() < 2 || node[1].tag != ValueTag::Array) return Value::null();
+            
+            // Create new child node
+            auto child = std::make_unique<Array>();
+            child->elems.push_back(pos[1]);
+            
+            auto childChildren = std::make_unique<Array>();
+            uint32_t childChildrenId = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(childChildren));
+            child->elems.push_back(Value::fromArray(childChildrenId));
+            
+            uint32_t childId = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(child));
+            
+            // Add to parent's children
+            arrays.at(node[1].as.id)->elems.push_back(Value::fromArray(childId));
+            
+            return Value::fromArray(childId);
+        }
+
+        if (op == "datastr.tree_children") {
+            if (pos.empty() || pos[0].tag != ValueTag::Array) return Value::null();
+            auto& node = arrays.at(pos[0].as.id)->elems;
+            
+            if (node.size() < 2) return Value::null();
+            return node[1];  // Return children array
+        }
+
         // =============================================================================
         // _ALG LIBRARY IMPLEMENTATIONS
         // =============================================================================
@@ -923,6 +1305,222 @@ private:
                 std::swap(arr[i], arr[j]);
             }
             return Value::null();
+        }
+
+        if (op == "alg.heapsort") {
+            if (pos.empty() || pos[0].tag != ValueTag::Array) return Value::null();
+            auto& arr = arrays.at(pos[0].as.id)->elems;
+            
+            std::make_heap(arr.begin(), arr.end(), [](const Value& a, const Value& b) {
+                float av = (a.tag == ValueTag::Float) ? a.as.f : static_cast<float>(a.as.i);
+                float bv = (b.tag == ValueTag::Float) ? b.as.f : static_cast<float>(b.as.i);
+                return av > bv;
+            });
+            
+            std::sort_heap(arr.begin(), arr.end(), [](const Value& a, const Value& b) {
+                float av = (a.tag == ValueTag::Float) ? a.as.f : static_cast<float>(a.as.i);
+                float bv = (b.tag == ValueTag::Float) ? b.as.f : static_cast<float>(b.as.i);
+                return av > bv;
+            });
+            
+            return Value::null();
+        }
+
+        if (op == "alg.bubblesort") {
+            if (pos.empty() || pos[0].tag != ValueTag::Array) return Value::null();
+            auto& arr = arrays.at(pos[0].as.id)->elems;
+            
+            for (size_t i = 0; i < arr.size(); i++) {
+                for (size_t j = 0; j < arr.size() - i - 1; j++) {
+                    float jv = (arr[j].tag == ValueTag::Float) ? arr[j].as.f : static_cast<float>(arr[j].as.i);
+                    float j1v = (arr[j+1].tag == ValueTag::Float) ? arr[j+1].as.f : static_cast<float>(arr[j+1].as.i);
+                    
+                    if (jv > j1v) {
+                        std::swap(arr[j], arr[j+1]);
+                    }
+                }
+            }
+            
+            return Value::null();
+        }
+
+        if (op == "alg.insertionsort") {
+            if (pos.empty() || pos[0].tag != ValueTag::Array) return Value::null();
+            auto& arr = arrays.at(pos[0].as.id)->elems;
+            
+            for (size_t i = 1; i < arr.size(); i++) {
+                Value key = arr[i];
+                float keyVal = (key.tag == ValueTag::Float) ? key.as.f : static_cast<float>(key.as.i);
+                
+                int32_t j = static_cast<int32_t>(i) - 1;
+                while (j >= 0) {
+                    float jVal = (arr[j].tag == ValueTag::Float) ? arr[j].as.f : static_cast<float>(arr[j].as.i);
+                    if (jVal <= keyVal) break;
+                    
+                    arr[j + 1] = arr[j];
+                    j--;
+                }
+                arr[j + 1] = key;
+            }
+            
+            return Value::null();
+        }
+
+        if (op == "alg.bfs") {
+            if (pos.size() < 2 || pos[0].tag != ValueTag::Array) return Value::null();
+            auto& graph = arrays.at(pos[0].as.id)->elems;
+            std::string start = stringify(pos[1]);
+            
+            auto result = std::make_unique<Array>();
+            std::unordered_set<std::string> visited;
+            std::queue<std::string> q;
+            
+            q.push(start);
+            visited.insert(start);
+            
+            while (!q.empty()) {
+                std::string current = q.front();
+                q.pop();
+                
+                // Add to result
+                uint32_t sid = static_cast<uint32_t>(stringHeap.size());
+                stringHeap.push_back(current);
+                result->elems.push_back(Value::fromString(sid));
+                
+                // Find neighbors
+                for (size_t i = 0; i < graph.size(); i += 2) {
+                    if (stringify(graph[i]) == current && i + 1 < graph.size() && graph[i+1].tag == ValueTag::Array) {
+                        auto& edges = arrays.at(graph[i+1].as.id)->elems;
+                        
+                        for (const auto& edge : edges) {
+                            if (edge.tag != ValueTag::Array) continue;
+                            auto& edgeData = arrays.at(edge.as.id)->elems;
+                            if (edgeData.empty()) continue;
+                            
+                            std::string neighbor = stringify(edgeData[0]);
+                            if (visited.insert(neighbor).second) {
+                                q.push(neighbor);
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+            
+            uint32_t id = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(result));
+            return Value::fromArray(id);
+        }
+
+        if (op == "alg.dfs") {
+            if (pos.size() < 2 || pos[0].tag != ValueTag::Array) return Value::null();
+            auto& graph = arrays.at(pos[0].as.id)->elems;
+            std::string start = stringify(pos[1]);
+            
+            auto result = std::make_unique<Array>();
+            std::unordered_set<std::string> visited;
+            
+            std::function<void(const std::string&)> dfsHelper = [&](const std::string& node) {
+                if (!visited.insert(node).second) return;
+                
+                uint32_t sid = static_cast<uint32_t>(stringHeap.size());
+                stringHeap.push_back(node);
+                result->elems.push_back(Value::fromString(sid));
+                
+                for (size_t i = 0; i < graph.size(); i += 2) {
+                    if (stringify(graph[i]) == node && i + 1 < graph.size() && graph[i+1].tag == ValueTag::Array) {
+                        auto& edges = arrays.at(graph[i+1].as.id)->elems;
+                        
+                        for (const auto& edge : edges) {
+                            if (edge.tag != ValueTag::Array) continue;
+                            auto& edgeData = arrays.at(edge.as.id)->elems;
+                            if (edgeData.empty()) continue;
+                            
+                            dfsHelper(stringify(edgeData[0]));
+                        }
+                        break;
+                    }
+                }
+            };
+            
+            dfsHelper(start);
+            
+            uint32_t id = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(result));
+            return Value::fromArray(id);
+        }
+
+        if (op == "alg.dijkstra") {
+            if (pos.size() < 3 || pos[0].tag != ValueTag::Array) return Value::null();
+            auto& graph = arrays.at(pos[0].as.id)->elems;
+            std::string start = stringify(pos[1]);
+            std::string end = stringify(pos[2]);
+            
+            std::unordered_map<std::string, float> dist;
+            std::unordered_map<std::string, std::string> prev;
+            
+            auto cmp = [&dist](const std::string& a, const std::string& b) {
+                return dist[a] > dist[b];
+            };
+            std::priority_queue<std::string, std::vector<std::string>, decltype(cmp)> pq(cmp);
+            
+            dist[start] = 0.0f;
+            pq.push(start);
+            
+            while (!pq.empty()) {
+                std::string current = pq.top();
+                pq.pop();
+                
+                if (current == end) break;
+                
+                for (size_t i = 0; i < graph.size(); i += 2) {
+                    if (stringify(graph[i]) == current && i + 1 < graph.size() && graph[i+1].tag == ValueTag::Array) {
+                        auto& edges = arrays.at(graph[i+1].as.id)->elems;
+                        
+                        for (const auto& edge : edges) {
+                            if (edge.tag != ValueTag::Array) continue;
+                            auto& edgeData = arrays.at(edge.as.id)->elems;
+                            if (edgeData.size() < 2) continue;
+                            
+                            std::string neighbor = stringify(edgeData[0]);
+                            float weight = (edgeData[1].tag == ValueTag::Float) ? 
+                                        edgeData[1].as.f : static_cast<float>(edgeData[1].as.i);
+                            
+                            float newDist = dist[current] + weight;
+                            if (!dist.count(neighbor) || newDist < dist[neighbor]) {
+                                dist[neighbor] = newDist;
+                                prev[neighbor] = current;
+                                pq.push(neighbor);
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+            
+            // Reconstruct path
+            auto path = std::make_unique<Array>();
+            if (dist.count(end)) {
+                std::vector<std::string> temp;
+                std::string current = end;
+                while (current != start) {
+                    temp.push_back(current);
+                    if (!prev.count(current)) break;
+                    current = prev[current];
+                }
+                temp.push_back(start);
+                
+                std::reverse(temp.begin(), temp.end());
+                for (const auto& node : temp) {
+                    uint32_t sid = static_cast<uint32_t>(stringHeap.size());
+                    stringHeap.push_back(node);
+                    path->elems.push_back(Value::fromString(sid));
+                }
+            }
+            
+            uint32_t id = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(path));
+            return Value::fromArray(id);
         }
 
         // =============================================================================
@@ -1291,6 +1889,525 @@ private:
 
             uint32_t id = static_cast<uint32_t>(arrays.size());
             arrays.push_back(std::move(standardized));
+            return Value::fromArray(id);
+        }
+
+        if (op == "ml.poly_fit") {
+            if (pos.size() < 3 || pos[0].tag != ValueTag::Array || pos[1].tag != ValueTag::Array) {
+                return Value::null();
+            }
+            
+            auto& x = arrays.at(pos[0].as.id)->elems;
+            auto& y = arrays.at(pos[1].as.id)->elems;
+            int32_t degree = (pos[2].tag == ValueTag::Int) ? pos[2].as.i : 2;
+            
+            if (x.size() != y.size() || x.empty() || degree < 1) return Value::null();
+            
+            // Simple polynomial fit using normal equations (for small degrees)
+            // This is a simplified implementation
+            auto model = std::make_unique<Array>();
+            model->elems.push_back(Value::fromInt(degree));
+            
+            // Store coefficients (simplified - just use linear fit for now)
+            if (degree == 1) {
+                float sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+                size_t n = x.size();
+                
+                for (size_t i = 0; i < n; i++) {
+                    float xi = (x[i].tag == ValueTag::Float) ? x[i].as.f : static_cast<float>(x[i].as.i);
+                    float yi = (y[i].tag == ValueTag::Float) ? y[i].as.f : static_cast<float>(y[i].as.i);
+                    
+                    sumX += xi;
+                    sumY += yi;
+                    sumXY += xi * yi;
+                    sumX2 += xi * xi;
+                }
+                
+                float slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+                float intercept = (sumY - slope * sumX) / n;
+                
+                model->elems.push_back(Value::fromFloat(intercept));
+                model->elems.push_back(Value::fromFloat(slope));
+            } else {
+                // For higher degrees, just store sample points
+                model->elems.push_back(pos[0]);
+                model->elems.push_back(pos[1]);
+            }
+            
+            uint32_t id = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(model));
+            return Value::fromArray(id);
+        }
+
+        if (op == "ml.poly_predict") {
+            if (pos.size() < 2 || pos[0].tag != ValueTag::Array) return Value::null();
+            
+            auto& model = arrays.at(pos[0].as.id)->elems;
+            if (model.empty()) return Value::null();
+            
+            int32_t degree = (model[0].tag == ValueTag::Int) ? model[0].as.i : 1;
+            float x = (pos[1].tag == ValueTag::Float) ? pos[1].as.f : static_cast<float>(pos[1].as.i);
+            
+            if (degree == 1 && model.size() >= 3) {
+                float intercept = (model[1].tag == ValueTag::Float) ? model[1].as.f : static_cast<float>(model[1].as.i);
+                float slope = (model[2].tag == ValueTag::Float) ? model[2].as.f : static_cast<float>(model[2].as.i);
+                return Value::fromFloat(intercept + slope * x);
+            }
+            
+            return Value::null();
+        }
+
+        if (op == "ml.logistic_fit") {
+            if (pos.size() < 4 || pos[0].tag != ValueTag::Array || pos[1].tag != ValueTag::Array) {
+                return Value::null();
+            }
+            
+            auto& xTrain = arrays.at(pos[0].as.id)->elems;
+            auto& yTrain = arrays.at(pos[1].as.id)->elems;
+            int32_t iterations = (pos[2].tag == ValueTag::Int) ? pos[2].as.i : 1000;
+            float learningRate = (pos[3].tag == ValueTag::Float) ? pos[3].as.f : 0.01f;
+            
+            if (xTrain.size() != yTrain.size() || xTrain.empty()) return Value::null();
+            
+            // Simplified logistic regression (assumes 1D features)
+            float weight = 0.0f;
+            float bias = 0.0f;
+            
+            for (int32_t iter = 0; iter < iterations; iter++) {
+                float totalError = 0.0f;
+                
+                for (size_t i = 0; i < xTrain.size(); i++) {
+                    float xi = (xTrain[i].tag == ValueTag::Float) ? xTrain[i].as.f : static_cast<float>(xTrain[i].as.i);
+                    float yi = (yTrain[i].tag == ValueTag::Float) ? yTrain[i].as.f : static_cast<float>(yTrain[i].as.i);
+                    
+                    float z = weight * xi + bias;
+                    float prediction = 1.0f / (1.0f + std::exp(-z));
+                    float error = yi - prediction;
+                    
+                    weight += learningRate * error * xi;
+                    bias += learningRate * error;
+                    
+                    totalError += error * error;
+                }
+                
+                // Early stopping if converged
+                if (totalError < 0.001f) break;
+            }
+            
+            auto model = std::make_unique<Array>();
+            model->elems.push_back(Value::fromFloat(weight));
+            model->elems.push_back(Value::fromFloat(bias));
+            
+            uint32_t id = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(model));
+            return Value::fromArray(id);
+        }
+
+        if (op == "ml.logistic_predict") {
+            if (pos.size() < 2 || pos[0].tag != ValueTag::Array) return Value::null();
+            
+            auto& model = arrays.at(pos[0].as.id)->elems;
+            if (model.size() < 2) return Value::null();
+            
+            float weight = (model[0].tag == ValueTag::Float) ? model[0].as.f : static_cast<float>(model[0].as.i);
+            float bias = (model[1].tag == ValueTag::Float) ? model[1].as.f : static_cast<float>(model[1].as.i);
+            
+            float x = (pos[1].tag == ValueTag::Float) ? pos[1].as.f : static_cast<float>(pos[1].as.i);
+            float z = weight * x + bias;
+            float prediction = 1.0f / (1.0f + std::exp(-z));
+            
+            return Value::fromFloat(prediction);
+        }
+
+        if (op == "ml.kmeans_predict") {
+            if (pos.size() < 2 || pos[0].tag != ValueTag::Array || pos[1].tag != ValueTag::Array) {
+                return Value::null();
+            }
+            
+            auto& model = arrays.at(pos[0].as.id)->elems;  // Centroids
+            auto& point = arrays.at(pos[1].as.id)->elems;
+            
+            if (model.empty()) return Value::null();
+            
+            float minDist = std::numeric_limits<float>::max();
+            int32_t bestCluster = 0;
+            
+            for (size_t c = 0; c < model.size(); c++) {
+                if (model[c].tag != ValueTag::Array) continue;
+                auto& centroid = arrays.at(model[c].as.id)->elems;
+                
+                float dist = 0.0f;
+                for (size_t d = 0; d < std::min(point.size(), centroid.size()); d++) {
+                    float pv = (point[d].tag == ValueTag::Float) ? point[d].as.f : static_cast<float>(point[d].as.i);
+                    float cv = (centroid[d].tag == ValueTag::Float) ? centroid[d].as.f : static_cast<float>(centroid[d].as.i);
+                    dist += (pv - cv) * (pv - cv);
+                }
+                dist = std::sqrt(dist);
+                
+                if (dist < minDist) {
+                    minDist = dist;
+                    bestCluster = static_cast<int32_t>(c);
+                }
+            }
+            
+            return Value::fromInt(bestCluster);
+        }
+
+        if (op == "ml.dtree_fit") {
+            if (pos.size() < 3 || pos[0].tag != ValueTag::Array || pos[1].tag != ValueTag::Array) {
+                return Value::null();
+            }
+            
+            // Simplified decision tree - just store training data
+            auto model = std::make_unique<Array>();
+            model->elems.push_back(pos[0]);  // X training
+            model->elems.push_back(pos[1]);  // y training
+            model->elems.push_back(pos[2]);  // max_depth
+            
+            uint32_t id = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(model));
+            return Value::fromArray(id);
+        }
+
+        if (op == "ml.dtree_predict") {
+            if (pos.size() < 2 || pos[0].tag != ValueTag::Array || pos[1].tag != ValueTag::Array) {
+                return Value::null();
+            }
+            
+            auto& model = arrays.at(pos[0].as.id)->elems;
+            if (model.size() < 2 || model[0].tag != ValueTag::Array || model[1].tag != ValueTag::Array) {
+                return Value::null();
+            }
+            
+            // Use k-NN as a simple classifier (k=3)
+            auto& xTrain = arrays.at(model[0].as.id)->elems;
+            auto& yTrain = arrays.at(model[1].as.id)->elems;
+            auto& testPoint = arrays.at(pos[1].as.id)->elems;
+            
+            std::vector<std::pair<float, float>> distances;
+            
+            for (size_t i = 0; i < xTrain.size(); i++) {
+                if (xTrain[i].tag != ValueTag::Array) continue;
+                auto& trainPoint = arrays.at(xTrain[i].as.id)->elems;
+                
+                float dist = 0.0f;
+                for (size_t j = 0; j < std::min(trainPoint.size(), testPoint.size()); j++) {
+                    float ti = (testPoint[j].tag == ValueTag::Float) ? testPoint[j].as.f : static_cast<float>(testPoint[j].as.i);
+                    float pi = (trainPoint[j].tag == ValueTag::Float) ? trainPoint[j].as.f : static_cast<float>(trainPoint[j].as.i);
+                    dist += (ti - pi) * (ti - pi);
+                }
+                
+                float label = (yTrain[i].tag == ValueTag::Float) ? yTrain[i].as.f : static_cast<float>(yTrain[i].as.i);
+                distances.push_back({std::sqrt(dist), label});
+            }
+            
+            std::sort(distances.begin(), distances.end());
+            
+            // Majority vote of 3 nearest neighbors
+            std::unordered_map<int32_t, int32_t> votes;
+            for (size_t i = 0; i < std::min(size_t(3), distances.size()); i++) {
+                votes[static_cast<int32_t>(distances[i].second)]++;
+            }
+            
+            int32_t maxVotes = 0;
+            int32_t prediction = 0;
+            for (const auto& [label, count] : votes) {
+                if (count > maxVotes) {
+                    maxVotes = count;
+                    prediction = label;
+                }
+            }
+            
+            return Value::fromInt(prediction);
+        }
+
+        if (op == "ml.nn_new") {
+            if (pos.empty() || pos[0].tag != ValueTag::Array) return Value::null();
+            
+            auto& layers = arrays.at(pos[0].as.id)->elems;
+            
+            // Neural network model: [layers, weights]
+            auto model = std::make_unique<Array>();
+            model->elems.push_back(pos[0]);  // Layer sizes
+            
+            // Initialize random weights
+            auto weights = std::make_unique<Array>();
+            
+            for (size_t i = 0; i < layers.size() - 1; i++) {
+                int32_t inputSize = (layers[i].tag == ValueTag::Int) ? layers[i].as.i : 0;
+                int32_t outputSize = (layers[i+1].tag == ValueTag::Int) ? layers[i+1].as.i : 0;
+                
+                auto layerWeights = std::make_unique<Array>();
+                for (int32_t j = 0; j < inputSize * outputSize; j++) {
+                    float w = (static_cast<float>(rand()) / RAND_MAX) * 2.0f - 1.0f;  // Random [-1, 1]
+                    layerWeights->elems.push_back(Value::fromFloat(w * 0.1f));  // Scale down
+                }
+                
+                uint32_t lwId = static_cast<uint32_t>(arrays.size());
+                arrays.push_back(std::move(layerWeights));
+                weights->elems.push_back(Value::fromArray(lwId));
+            }
+            
+            uint32_t wId = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(weights));
+            model->elems.push_back(Value::fromArray(wId));
+            
+            uint32_t id = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(model));
+            return Value::fromArray(id);
+        }
+
+        if (op == "ml.nn_train") {
+            if (pos.size() < 5 || pos[0].tag != ValueTag::Array || 
+                pos[1].tag != ValueTag::Array || pos[2].tag != ValueTag::Array) {
+                return Value::null();
+            }
+            
+            auto& model = arrays.at(pos[0].as.id)->elems;
+            if (model.size() < 2 || model[1].tag != ValueTag::Array) return Value::null();
+            
+            auto& xTrain = arrays.at(pos[1].as.id)->elems;
+            auto& yTrain = arrays.at(pos[2].as.id)->elems;
+            int32_t epochs = (pos[3].tag == ValueTag::Int) ? pos[3].as.i : 100;
+            float learningRate = (pos[4].tag == ValueTag::Float) ? pos[4].as.f : 0.01f;
+            
+            // Simplified training - just update weights randomly (placeholder)
+            auto& weightsArr = arrays.at(model[1].as.id)->elems;
+            
+            for (int32_t epoch = 0; epoch < epochs; epoch++) {
+                for (size_t i = 0; i < xTrain.size(); i++) {
+                    // In a real implementation, this would do forward pass, 
+                    // compute loss, and backpropagate
+                    
+                    // For now, just slightly adjust weights
+                    for (auto& layerWeightVal : weightsArr) {
+                        if (layerWeightVal.tag != ValueTag::Array) continue;
+                        auto& layerWeights = arrays.at(layerWeightVal.as.id)->elems;
+                        
+                        for (auto& w : layerWeights) {
+                            if (w.tag == ValueTag::Float) {
+                                float adjustment = ((static_cast<float>(rand()) / RAND_MAX) - 0.5f) * learningRate * 0.1f;
+                                w.as.f += adjustment;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return Value::null();
+        }
+
+        if (op == "ml.nn_predict") {
+            if (pos.size() < 2 || pos[0].tag != ValueTag::Array || pos[1].tag != ValueTag::Array) {
+                return Value::null();
+            }
+            
+            auto& model = arrays.at(pos[0].as.id)->elems;
+            if (model.size() < 2 || model[0].tag != ValueTag::Array || model[1].tag != ValueTag::Array) {
+                return Value::null();
+            }
+            
+            auto& layers = arrays.at(model[0].as.id)->elems;
+            auto& weightsArr = arrays.at(model[1].as.id)->elems;
+            auto& input = arrays.at(pos[1].as.id)->elems;
+            
+            // Forward pass
+            std::vector<float> activation;
+            for (const auto& v : input) {
+                activation.push_back((v.tag == ValueTag::Float) ? v.as.f : static_cast<float>(v.as.i));
+            }
+            
+            // Go through each layer
+            for (size_t layer = 0; layer < weightsArr.size(); layer++) {
+                if (weightsArr[layer].tag != ValueTag::Array) continue;
+                auto& weights = arrays.at(weightsArr[layer].as.id)->elems;
+                
+                int32_t outputSize = (layers[layer + 1].tag == ValueTag::Int) ? layers[layer + 1].as.i : 0;
+                std::vector<float> newActivation(outputSize, 0.0f);
+                
+                for (int32_t out = 0; out < outputSize; out++) {
+                    for (size_t in = 0; in < activation.size(); in++) {
+                        size_t wIdx = in * outputSize + out;
+                        if (wIdx < weights.size() && weights[wIdx].tag == ValueTag::Float) {
+                            newActivation[out] += activation[in] * weights[wIdx].as.f;
+                        }
+                    }
+                    // Apply sigmoid activation
+                    newActivation[out] = 1.0f / (1.0f + std::exp(-newActivation[out]));
+                }
+                
+                activation = newActivation;
+            }
+            
+            // Return output
+            auto output = std::make_unique<Array>();
+            for (float val : activation) {
+                output->elems.push_back(Value::fromFloat(val));
+            }
+            
+            uint32_t id = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(output));
+            return Value::fromArray(id);
+        }
+
+        if (op == "ml.softmax") {
+            if (pos.empty() || pos[0].tag != ValueTag::Array) return Value::null();
+            auto& arr = arrays.at(pos[0].as.id)->elems;
+            
+            if (arr.empty()) return pos[0];
+            
+            // Find max for numerical stability
+            float maxVal = std::numeric_limits<float>::lowest();
+            for (const auto& v : arr) {
+                float val = (v.tag == ValueTag::Float) ? v.as.f : static_cast<float>(v.as.i);
+                maxVal = std::max(maxVal, val);
+            }
+            
+            // Compute exp and sum
+            std::vector<float> expVals;
+            float sum = 0.0f;
+            for (const auto& v : arr) {
+                float val = (v.tag == ValueTag::Float) ? v.as.f : static_cast<float>(v.as.i);
+                float expVal = std::exp(val - maxVal);
+                expVals.push_back(expVal);
+                sum += expVal;
+            }
+            
+            // Normalize
+            auto result = std::make_unique<Array>();
+            for (float expVal : expVals) {
+                result->elems.push_back(Value::fromFloat(expVal / sum));
+            }
+            
+            uint32_t id = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(result));
+            return Value::fromArray(id);
+        }
+
+        if (op == "ml.cross_entropy") {
+            if (pos.size() < 2 || pos[0].tag != ValueTag::Array || pos[1].tag != ValueTag::Array) {
+                return Value::null();
+            }
+            
+            auto& yTrue = arrays.at(pos[0].as.id)->elems;
+            auto& yPred = arrays.at(pos[1].as.id)->elems;
+            
+            if (yTrue.size() != yPred.size()) return Value::null();
+            
+            float loss = 0.0f;
+            for (size_t i = 0; i < yTrue.size(); i++) {
+                float t = (yTrue[i].tag == ValueTag::Float) ? yTrue[i].as.f : static_cast<float>(yTrue[i].as.i);
+                float p = (yPred[i].tag == ValueTag::Float) ? yPred[i].as.f : static_cast<float>(yPred[i].as.i);
+                
+                // Clip prediction to avoid log(0)
+                p = std::max(1e-7f, std::min(1.0f - 1e-7f, p));
+                loss -= t * std::log(p);
+            }
+            
+            return Value::fromFloat(loss / yTrue.size());
+        }
+
+        if (op == "ml.confusion_matrix") {
+            if (pos.size() < 2 || pos[0].tag != ValueTag::Array || pos[1].tag != ValueTag::Array) {
+                return Value::null();
+            }
+            
+            auto& yTrue = arrays.at(pos[0].as.id)->elems;
+            auto& yPred = arrays.at(pos[1].as.id)->elems;
+            
+            if (yTrue.size() != yPred.size()) return Value::null();
+            
+            // Find number of classes
+            int32_t maxClass = 0;
+            for (const auto& v : yTrue) {
+                int32_t c = (v.tag == ValueTag::Int) ? v.as.i : static_cast<int32_t>(v.as.f);
+                maxClass = std::max(maxClass, c);
+            }
+            for (const auto& v : yPred) {
+                int32_t c = (v.tag == ValueTag::Int) ? v.as.i : static_cast<int32_t>(v.as.f);
+                maxClass = std::max(maxClass, c);
+            }
+            
+            int32_t numClasses = maxClass + 1;
+            
+            // Build confusion matrix
+            auto matrix = std::make_unique<Array>();
+            for (int32_t i = 0; i < numClasses; i++) {
+                auto row = std::make_unique<Array>();
+                for (int32_t j = 0; j < numClasses; j++) {
+                    row->elems.push_back(Value::fromInt(0));
+                }
+                uint32_t rowId = static_cast<uint32_t>(arrays.size());
+                arrays.push_back(std::move(row));
+                matrix->elems.push_back(Value::fromArray(rowId));
+            }
+            
+            // Fill matrix
+            for (size_t i = 0; i < yTrue.size(); i++) {
+                int32_t t = (yTrue[i].tag == ValueTag::Int) ? yTrue[i].as.i : static_cast<int32_t>(yTrue[i].as.f);
+                int32_t p = (yPred[i].tag == ValueTag::Int) ? yPred[i].as.i : static_cast<int32_t>(yPred[i].as.f);
+                
+                if (t >= 0 && t < numClasses && p >= 0 && p < numClasses) {
+                    auto& row = arrays.at(matrix->elems[t].as.id)->elems;
+                    if (row[p].tag == ValueTag::Int) {
+                        row[p].as.i++;
+                    }
+                }
+            }
+            
+            uint32_t id = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(matrix));
+            return Value::fromArray(id);
+        }
+
+        if (op == "ml.train_test_split") {
+            if (pos.size() < 3 || pos[0].tag != ValueTag::Array || pos[1].tag != ValueTag::Array) {
+                return Value::null();
+            }
+            
+            auto& x = arrays.at(pos[0].as.id)->elems;
+            auto& y = arrays.at(pos[1].as.id)->elems;
+            float testSize = (pos[2].tag == ValueTag::Float) ? pos[2].as.f : 0.2f;
+            
+            if (x.size() != y.size() || x.empty()) return Value::null();
+            
+            size_t splitIdx = static_cast<size_t>(x.size() * (1.0f - testSize));
+            
+            auto xTrain = std::make_unique<Array>();
+            auto xTest = std::make_unique<Array>();
+            auto yTrain = std::make_unique<Array>();
+            auto yTest = std::make_unique<Array>();
+            
+            for (size_t i = 0; i < x.size(); i++) {
+                if (i < splitIdx) {
+                    xTrain->elems.push_back(x[i]);
+                    yTrain->elems.push_back(y[i]);
+                } else {
+                    xTest->elems.push_back(x[i]);
+                    yTest->elems.push_back(y[i]);
+                }
+            }
+            
+            auto result = std::make_unique<Array>();
+            
+            uint32_t xTrainId = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(xTrain));
+            result->elems.push_back(Value::fromArray(xTrainId));
+            
+            uint32_t xTestId = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(xTest));
+            result->elems.push_back(Value::fromArray(xTestId));
+            
+            uint32_t yTrainId = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(yTrain));
+            result->elems.push_back(Value::fromArray(yTrainId));
+            
+            uint32_t yTestId = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(yTest));
+            result->elems.push_back(Value::fromArray(yTestId));
+            
+            uint32_t id = static_cast<uint32_t>(arrays.size());
+            arrays.push_back(std::move(result));
             return Value::fromArray(id);
         }
 

@@ -896,6 +896,118 @@ public:
                 return true;
             }
 
+            // Set operations
+            if (funcName == "set_new") {
+                generateLibCall("datastr.set_new", 0, writer, constantPool, currentStackDepth, maxStackDepth);
+                pushStack();
+                return true;
+            }
+            
+            if (funcName == "set_add") {
+                if (argc != 2) throw std::runtime_error("set_add() requires 2 arguments");
+                generateLibCall("datastr.set_add", argc, writer, constantPool, currentStackDepth, maxStackDepth);
+                popStack(2);
+                return false;
+            }
+            
+            if (funcName == "set_has") {
+                if (argc != 2) throw std::runtime_error("set_has() requires 2 arguments");
+                generateLibCall("datastr.set_has", argc, writer, constantPool, currentStackDepth, maxStackDepth);
+                popStack(1);
+                return true;
+            }
+            
+            if (funcName == "set_delete") {
+                if (argc != 2) throw std::runtime_error("set_delete() requires 2 arguments");
+                generateLibCall("datastr.set_delete", argc, writer, constantPool, currentStackDepth, maxStackDepth);
+                popStack(1);
+                return true;
+            }
+            
+            if (funcName == "set_union") {
+                if (argc != 2) throw std::runtime_error("set_union() requires 2 arguments");
+                generateLibCall("datastr.set_union", argc, writer, constantPool, currentStackDepth, maxStackDepth);
+                popStack(1);
+                return true;
+            }
+            
+            if (funcName == "set_intersect") {
+                if (argc != 2) throw std::runtime_error("set_intersect() requires 2 arguments");
+                generateLibCall("datastr.set_intersect", argc, writer, constantPool, currentStackDepth, maxStackDepth);
+                popStack(1);
+                return true;
+            }
+            
+            // List operations
+            if (funcName == "list_new") {
+                generateLibCall("datastr.list_new", 0, writer, constantPool, currentStackDepth, maxStackDepth);
+                pushStack();
+                return true;
+            }
+            
+            if (funcName == "list_append") {
+                if (argc != 2) throw std::runtime_error("list_append() requires 2 arguments");
+                generateLibCall("datastr.list_append", argc, writer, constantPool, currentStackDepth, maxStackDepth);
+                popStack(2);
+                return false;
+            }
+            
+            if (funcName == "list_prepend") {
+                if (argc != 2) throw std::runtime_error("list_prepend() requires 2 arguments");
+                generateLibCall("datastr.list_prepend", argc, writer, constantPool, currentStackDepth, maxStackDepth);
+                popStack(2);
+                return false;
+            }
+            
+            if (funcName == "list_get") {
+                if (argc != 2) throw std::runtime_error("list_get() requires 2 arguments");
+                generateLibCall("datastr.list_get", argc, writer, constantPool, currentStackDepth, maxStackDepth);
+                popStack(1);
+                return true;
+            }
+            
+            if (funcName == "list_insert") {
+                if (argc != 3) throw std::runtime_error("list_insert() requires 3 arguments");
+                generateLibCall("datastr.list_insert", argc, writer, constantPool, currentStackDepth, maxStackDepth);
+                popStack(3);
+                return false;
+            }
+            
+            if (funcName == "list_remove") {
+                if (argc != 2) throw std::runtime_error("list_remove() requires 2 arguments");
+                generateLibCall("datastr.list_remove", argc, writer, constantPool, currentStackDepth, maxStackDepth);
+                popStack(2);
+                return false;
+            }
+            
+            // Graph operations
+            if (funcName == "graph_neighbors") {
+                if (argc != 2) throw std::runtime_error("graph_neighbors() requires 2 arguments");
+                generateLibCall("datastr.graph_neighbors", argc, writer, constantPool, currentStackDepth, maxStackDepth);
+                popStack(1);
+                return true;
+            }
+            
+            // Tree operations
+            if (funcName == "tree_new") {
+                if (argc != 1) throw std::runtime_error("tree_new() requires 1 argument");
+                generateLibCall("datastr.tree_new", argc, writer, constantPool, currentStackDepth, maxStackDepth);
+                return true;
+            }
+            
+            if (funcName == "tree_add_child") {
+                if (argc != 2) throw std::runtime_error("tree_add_child() requires 2 arguments");
+                generateLibCall("datastr.tree_add_child", argc, writer, constantPool, currentStackDepth, maxStackDepth);
+                popStack(1);
+                return true;
+            }
+            
+            if (funcName == "tree_children") {
+                if (argc != 1) throw std::runtime_error("tree_children() requires 1 argument");
+                generateLibCall("datastr.tree_children", argc, writer, constantPool, currentStackDepth, maxStackDepth);
+                return true;
+            }
+
             // Graph operations
             if (funcName == "graph_new") {
                 generateLibCall("datastr.graph_new", 0, writer, constantPool, currentStackDepth, maxStackDepth);
