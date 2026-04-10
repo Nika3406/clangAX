@@ -88,12 +88,18 @@ private:
     uint16_t currentStackDepth;
     uint16_t maxStackDepth;
 
+    // Tracks names of own<T> locals declared in the current lexical scope chain.
+    // Each entry is the variable name; we record the high-water mark per block
+    // so we can auto-free exactly the variables introduced in that block.
+    std::vector<std::string> owningLocals;
+
     void resetFunctionState() {
         localVariables.clear();
         nextLocalIndex = 0;
         currentStackDepth = 0;
         maxStackDepth = 0;
         writer.clear();
+        owningLocals.clear();
     }
 
     uint16_t getOrCreateLocal(const std::string& name) {
@@ -121,6 +127,49 @@ public:
     void setImportedLibraries(const std::map<std::string, std::shared_ptr<Library>>& libs) {
         importedLibraries = libs;
     }
+
+    // -----------------------------------------------------------------------
+    // Memory management code generation
+    // -----------------------------------------------------------------------
+
+    // alloc(expr) — evaluate expr, heap-allocate it, leave pointer on stack
+    void generateAlloc(std::shared_ptr<ASTNode> node) {
+        if (node->children.empty()) return;
+        generateExpression(node->children[0]); // value on stack
+        writer.writeByte(ALLOC);
+        // ALLOC consumes 1 value and pushes 1 pointer — net stack depth: unchanged.
+        // (we don't need pushStack/popStack here; the value slot is reused as the pointer)
+    }
+
+    // *ptr — dereference: load the pointer, emit DEREF, result is value
+    void generateDeref(std::shared_ptr<ASTNode> node) {
+        if (node->children.empty()) return;
+        generateExpression(node->children[0]); // pointer on stack
+        writer.writeByte(DEREF);
+        // DEREF consumes pointer and pushes the stored value — net: unchanged.
+    }
+
+    // &var — address-of: emit ADDR_OF with the slot of the named local
+    void generateAddrOf(std::shared_ptr<ASTNode> node) {
+        if (node->children.empty()) return;
+        const std::string& varName = node->children[0]->value;
+        uint16_t slot = getOrCreateLocal(varName);
+        writer.writeByte(ADDR_OF);
+        writer.writeShort(slot);
+        pushStack(); // ADDR_OF pushes a pointer
+    }
+
+    // *ptr = expr — write through a pointer: push ptr, push value, emit DEREF_STORE.
+    // Stack protocol matches the VM handler: [... ptr value] → pops value first, then ptr.
+    void generateDerefAssign(std::shared_ptr<ASTNode> node) {
+        if (node->children.size() < 2) return;
+        generateExpression(node->children[0]); // pointer → stack
+        generateExpression(node->children[1]); // value   → stack (on top)
+        writer.writeByte(DEREF_STORE);
+        popStack(2); // DEREF_STORE consumes both, pushes nothing
+    }
+
+    // -----------------------------------------------------------------------
 
     // Helper to generate a simple library call
     void generateSimpleLibCall(const std::string& opName, size_t argc) {
@@ -253,8 +302,40 @@ public:
     }
 
     void generateBlock(std::shared_ptr<ASTNode> node) {
+        // Record how many owning locals existed before this block.
+        // Any new own<> variables declared inside are freed on exit.
+        size_t ownMark = owningLocals.size();
+
         for (auto& stmt : node->children)
             generateStatement(stmt);
+
+        // Auto-free own<T> locals introduced in this block, in reverse order
+        // (LIFO, matching the reverse of declaration order).
+        for (size_t i = owningLocals.size(); i > ownMark; --i) {
+            const std::string& name = owningLocals[i - 1];
+            auto it = localVariables.find(name);
+            if (it == localVariables.end()) continue;
+            uint16_t slot = it->second;
+
+            writer.writeByte(LOAD);
+            writer.writeShort(slot);
+            pushStack();
+
+            writer.writeByte(FREE);
+            popStack(); // FREE consumes the pointer, pushes nothing
+
+            // Null-out the slot so any stale load returns null rather than
+            // a dangling pointer value.
+            uint32_t nullIdx = constantPool.addInt(0);
+            writer.writeByte(LDC);
+            writer.writeInt(nullIdx);
+            pushStack();
+            writer.writeByte(STORE);
+            writer.writeShort(slot);
+            popStack();
+        }
+
+        owningLocals.resize(ownMark);
     }
 
     void generatePostIncrement(std::shared_ptr<ASTNode> node) {
@@ -289,6 +370,16 @@ public:
             case NodeType::PRINT_STMT: generatePrint(node); break;
             case NodeType::BLOCK: generateBlock(node); break;
             case NodeType::POST_INCREMENT: generatePostIncrement(node); break;
+            // Explicit free(ptr) statement
+            case NodeType::FREE_STMT:
+                if (!node->children.empty()) {
+                    generateExpression(node->children[0]); // pointer on stack
+                    writer.writeByte(FREE);
+                    popStack(); // FREE is void
+                }
+                break;
+            // *ptr = expr — write-through assignment
+            case NodeType::DEREF_ASSIGN: generateDerefAssign(node); break;
             case NodeType::CALL_EXPR: {
                 bool leavesValue = generateFunctionCall(node);
                 if (leavesValue) {
@@ -302,15 +393,19 @@ public:
 
                 auto expr = node->children[0];
 
-                // For now, only allow function calls as expression-statements
-                if (expr->type != NodeType::CALL_EXPR) {
-                    throw std::runtime_error("Only function calls allowed as expression statements (for now).");
-                }
-
-                bool leavesValue = generateFunctionCall(expr);
-                if (leavesValue) {
+                if (expr->type == NodeType::CALL_EXPR) {
+                    bool leavesValue = generateFunctionCall(expr);
+                    if (leavesValue) {
+                        writer.writeByte(POP);
+                        popStack();
+                    }
+                } else if (expr->type == NodeType::ALLOC_EXPR) {
+                    // alloc used as a bare statement — result discarded
+                    generateAlloc(expr);
                     writer.writeByte(POP);
                     popStack();
+                } else {
+                    throw std::runtime_error("Unsupported expression statement type.");
                 }
                 break;
             }
@@ -328,18 +423,33 @@ public:
         writer.writeByte(STORE);
         writer.writeShort(localIdx);
         popStack();
+
+        // If this variable is declared as own<T>, register it so generateBlock
+        // can emit a FREE when it goes out of scope.
+        if (node->getAttribute("is_own") == "true") {
+            // Only register once per variable name (re-assignment is a transfer).
+            bool already = false;
+            for (const auto& n : owningLocals) {
+                if (n == node->value) { already = true; break; }
+            }
+            if (!already) owningLocals.push_back(node->value);
+        }
     }
 
 
     void generateExpression(std::shared_ptr<ASTNode> node) {
         switch (node->type) {
-            case NodeType::LITERAL: generateLiteral(node); break;
-            case NodeType::IDENTIFIER: generateIdentifier(node); break;
-            case NodeType::BINARY_OP: generateBinaryOp(node); break;
-            case NodeType::UNARY_OP: generateUnaryOp(node); break;
-            case NodeType::CALL_EXPR: (void)generateFunctionCall(node); break;
-            case NodeType::ARRAY_ACCESS: generateArrayAccess(node); break;
+            case NodeType::LITERAL:       generateLiteral(node);      break;
+            case NodeType::IDENTIFIER:    generateIdentifier(node);   break;
+            case NodeType::BINARY_OP:     generateBinaryOp(node);     break;
+            case NodeType::UNARY_OP:      generateUnaryOp(node);      break;
+            case NodeType::CALL_EXPR:     (void)generateFunctionCall(node); break;
+            case NodeType::ARRAY_ACCESS:  generateArrayAccess(node);  break;
             case NodeType::ARRAY_LITERAL: generateArrayLiteral(node); break;
+            // Memory management expressions
+            case NodeType::ALLOC_EXPR:    generateAlloc(node);        break;
+            case NodeType::DEREF_EXPR:    generateDeref(node);        break;
+            case NodeType::ADDR_OF_EXPR:  generateAddrOf(node);       break;
             default: break;
         }
     }

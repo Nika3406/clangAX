@@ -3,7 +3,7 @@
 
 # CMake / builds
 build/
-cmake-build-*/
+cmake-build-debug/
 
 # OS junk
 .DS_Store

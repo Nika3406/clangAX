@@ -39,11 +39,86 @@ private:
         return false;
     }
 
+    // Discard any NEWLINE tokens at the current position.
+    // Call this wherever newlines are syntactically irrelevant
+    // (inside expressions, after '{', after ',', etc.).
+    void skipNewlines() {
+        while (currentToken().type == TokenType::NEWLINE) {
+            advance();
+        }
+    }
+
+    // Consume the end of a statement: one or more NEWLINEs, a ';', or
+    // implicitly the closing '}' / EOF (neither is consumed here).
+    // This is the replacement for the old optional match(SEMICOLON).
+    void matchStmtEnd() {
+        if (currentToken().type == TokenType::SEMICOLON) {
+            advance();
+            skipNewlines();
+            return;
+        }
+        // Consume at least one NEWLINE (or be at '}' / EOF which is fine).
+        skipNewlines();
+    }
+
     void expect(TokenType type, const std::string& message) {
         if (!match(type)) {
             throw std::runtime_error("Parse error: " + message +
                                    " at line " + std::to_string(currentToken().line));
         }
+    }
+
+    // -----------------------------------------------------------------------
+    // Type annotation parser: own<T>, ptr<T>, borrow<T>, or bare type name
+    // Returns a string like "own<int>" or "" if no type annotation present.
+    // -----------------------------------------------------------------------
+    std::string parseType() {
+        std::string outer;
+        if (currentToken().type == TokenType::OWN)    { outer = "own";    advance(); }
+        else if (currentToken().type == TokenType::PTR)    { outer = "ptr";    advance(); }
+        else if (currentToken().type == TokenType::BORROW) { outer = "borrow"; advance(); }
+        else {
+            // bare identifier type (int, float, etc.) — only used recursively
+            if (currentToken().type == TokenType::IDENTIFIER) {
+                std::string t = currentToken().value;
+                advance();
+                return t;
+            }
+            return ""; // no type annotation
+        }
+
+        expect(TokenType::LESS, "Expected '<' after '" + outer + "'");
+
+        // inner type: may be another own<>/ptr<>/borrow<> or a bare name
+        std::string inner = parseType();
+        if (inner.empty()) {
+            throw std::runtime_error("Expected inner type name in " + outer + "<...> at line " +
+                                     std::to_string(currentToken().line));
+        }
+
+        expect(TokenType::GREATER, "Expected '>' closing '" + outer + "<" + inner + "'");
+        return outer + "<" + inner + ">";
+    }
+
+    // alloc(expr) — heap-allocates expr and returns a pointer to it
+    std::shared_ptr<ASTNode> parseAllocExpr() {
+        advance(); // consume 'alloc'
+        expect(TokenType::LPAREN, "Expected '(' after 'alloc'");
+        auto node = makeNode(NodeType::ALLOC_EXPR, "alloc");
+        node->addChild(parseExpression());
+        expect(TokenType::RPAREN, "Expected ')' after alloc argument");
+        return node;
+    }
+
+    // free(expr) — explicit deallocation statement
+    std::shared_ptr<ASTNode> parseFreeStmt() {
+        advance(); // consume 'free'
+        expect(TokenType::LPAREN, "Expected '(' after 'free'");
+        auto node = makeNode(NodeType::FREE_STMT, "free");
+        node->addChild(parseExpression());
+        expect(TokenType::RPAREN, "Expected ')' after free argument");
+        matchStmtEnd();
+        return node;
     }
 
     // Parse import directive: #import "library_name"
@@ -85,6 +160,8 @@ private:
 
         // Parse functions
         while (currentToken().type != TokenType::END_OF_FILE) {
+            skipNewlines();
+            if (currentToken().type == TokenType::END_OF_FILE) break;
             if (currentToken().type == TokenType::FUNC) {
                 program->addChild(parseFunction());
             } else {
@@ -146,6 +223,7 @@ private:
         }
 
         // Parse function body
+        skipNewlines();
         funcNode->addChild(parseBlock());
 
         return funcNode;
@@ -154,12 +232,14 @@ private:
     // Parse block { ... }
     std::shared_ptr<ASTNode> parseBlock() {
         expect(TokenType::LBRACE, "Expected '{'");
+        skipNewlines();
 
         auto block = makeNode(NodeType::BLOCK, "block");
 
         while (currentToken().type != TokenType::RBRACE &&
                currentToken().type != TokenType::END_OF_FILE) {
             block->addChild(parseStatement());
+            skipNewlines();
         }
 
         expect(TokenType::RBRACE, "Expected '}'");
@@ -186,18 +266,28 @@ private:
             return parsePrintStatement();
         } else if (type == TokenType::WRITE) {
             return parseWriteStatement();
+        } else if (type == TokenType::FREE) {
+            // free(ptr) — explicit deallocation
+            return parseFreeStmt();
+        } else if (type == TokenType::ALLOC) {
+            // alloc(...) used as a bare statement (rare, but legal — result discarded)
+            auto expr = parseAllocExpr();
+            matchStmtEnd();
+            auto stmt = makeNode(NodeType::EXPRESSION_STMT, "alloc_stmt");
+            stmt->addChild(expr);
+            return stmt;
         } else if (type == TokenType::LBRACE) {
             return parseBlock();
         } else if (type == TokenType::IDENTIFIER) {
             // Look ahead to determine what kind of statement
             if (peek().type == TokenType::ASSIGN) {
                 auto a = parseAssignment();
-                match(TokenType::SEMICOLON);
+                matchStmtEnd();
                 return a;
             } else if (peek().type == TokenType::LPAREN) {
                 // Function call
                 auto call = parseFunctionCall();
-                match(TokenType::SEMICOLON);
+                matchStmtEnd();
                 return call;
             } else if (peek().type == TokenType::INCREMENT || peek().type == TokenType::DECREMENT) {
                 // Post-increment/decrement
@@ -214,13 +304,32 @@ private:
                 binOp->addChild(one);
                 assignment->addChild(binOp);
 
-                match(TokenType::SEMICOLON);
+                matchStmtEnd();
                 return assignment;
             } else {
                 auto expr = parseExpression();
-                match(TokenType::SEMICOLON);
+                matchStmtEnd();
                 return expr;
             }
+        } else if (type == TokenType::STAR) {
+            advance(); // consume '*'
+
+            // LHS must be a plain identifier — do NOT call parsePrimary here,
+            // it may consume the '=' that follows.
+            if (currentToken().type != TokenType::IDENTIFIER) {
+                throw std::runtime_error("Expected identifier after '*' in assignment");
+            }
+            auto ptrIdent = makeNode(NodeType::IDENTIFIER, currentToken().value);
+            advance(); // consume the identifier
+
+            expect(TokenType::ASSIGN, "Expected '=' after dereferenced pointer");
+            auto rhs = parseExpression();
+            matchStmtEnd();
+
+            auto node = makeNode(NodeType::DEREF_ASSIGN, "*=");
+            node->addChild(ptrIdent);
+            node->addChild(rhs);
+            return node;
         } else {
             throw std::runtime_error(
                 "Unexpected token '" + currentToken().value + "' at line " +
@@ -230,7 +339,7 @@ private:
         }
     }
 
-    // Parse assignment: identifier = expression
+    // Parse assignment: identifier [: type] = expression
     std::shared_ptr<ASTNode> parseAssignment() {
         if (currentToken().type == TokenType::IDENTIFIER &&
             peek(1).type == TokenType::INCREMENT) {
@@ -243,9 +352,25 @@ private:
         std::string varName = currentToken().value;
         advance();
 
+        // Optional type annotation: x: own<int> = ...
+        std::string typeAnnotation;
+        if (currentToken().type == TokenType::COLON) {
+            advance(); // consume ':'
+            typeAnnotation = parseType();
+        }
+
         expect(TokenType::ASSIGN, "Expected '='");
 
         auto assignment = makeNode(NodeType::ASSIGNMENT, varName);
+
+        if (!typeAnnotation.empty()) {
+            assignment->setAttribute("type_annotation", typeAnnotation);
+            // Mark owning pointers so the bytecode generator can auto-free them
+            if (typeAnnotation.rfind("own<", 0) == 0) {
+                assignment->setAttribute("is_own", "true");
+            }
+        }
+
         assignment->addChild(parseExpression());
 
         return assignment;
@@ -266,8 +391,10 @@ private:
         // Then block
         ifStmt->addChild(parseBlock());
 
-        // Optional else
+        // Optional else — skip any newlines between '}' and 'else'
+        skipNewlines();
         if (match(TokenType::ELSE)) {
+            skipNewlines();
             ifStmt->addChild(parseBlock());
         }
 
@@ -353,7 +480,7 @@ private:
 
         expect(TokenType::RPAREN, "Expected ')' after expression");
 
-        match(TokenType::SEMICOLON);
+        matchStmtEnd();
 
         return printStmt;
     }
@@ -370,7 +497,7 @@ private:
         writeStmt->addChild(call);
 
         expect(TokenType::RPAREN, "Expected ')' after argument");
-        match(TokenType::SEMICOLON);
+        matchStmtEnd();
         return writeStmt;
     }
 
@@ -507,6 +634,32 @@ private:
 
     // Primary expressions: numbers, strings, identifiers, parentheses
     std::shared_ptr<ASTNode> parsePrimary() {
+        // *ptr — dereference
+        if (currentToken().type == TokenType::STAR) {
+            advance();
+            auto node = makeNode(NodeType::DEREF_EXPR, "*");
+            node->addChild(parsePrimary()); // right-recursive, handles **ptr too
+            return node;
+        }
+
+        // &var — address-of
+        if (currentToken().type == TokenType::AMP) {
+            advance();
+            if (currentToken().type != TokenType::IDENTIFIER) {
+                throw std::runtime_error("Expected variable name after '&' at line " +
+                                         std::to_string(currentToken().line));
+            }
+            auto node = makeNode(NodeType::ADDR_OF_EXPR, "&");
+            node->addChild(makeNode(NodeType::IDENTIFIER, currentToken().value));
+            advance();
+            return node;
+        }
+
+        // alloc(expr) — heap allocation expression
+        if (currentToken().type == TokenType::ALLOC) {
+            return parseAllocExpr();
+        }
+
         // Number literal
         if (currentToken().type == TokenType::NUMBER) {
             auto literal = makeNode(NodeType::LITERAL, currentToken().value);

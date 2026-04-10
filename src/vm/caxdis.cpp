@@ -78,6 +78,13 @@ const char* opcodeToString(uint8_t opcode) {
         case INDEX_SET: return "INDEX_SET";
         case EXEC: return "EXEC";
 
+        // v2: manual memory management opcodes
+        case ALLOC:       return "ALLOC";
+        case FREE:        return "FREE";
+        case DEREF:       return "DEREF";
+        case DEREF_STORE: return "DEREF_STORE";
+        case ADDR_OF:     return "ADDR_OF";
+
         default: return "UNKNOWN";
     }
 }
@@ -181,7 +188,7 @@ void disassemble(const std::string& filename, bool verbose) {
             switch(op) {
                 case LDC:
                 case PRINT_S: {
-                    if (pc + 3 < code.size()) {
+                    if (pc + 4 <= code.size()) {
                         uint32_t idx = (code[pc] << 24) | (code[pc+1] << 16) |
                                       (code[pc+2] << 8) | code[pc+3];
                         pc += 4;
@@ -200,10 +207,19 @@ void disassemble(const std::string& filename, bool verbose) {
                 case LOAD:
                 case STORE:
                 case WRITE_LOCAL: {
-                    if (pc + 1 < code.size()) {
+                    if (pc + 2 <= code.size()) {
                         uint16_t slot = (code[pc] << 8) | code[pc+1];
                         pc += 2;
                         std::cout << " slot#" << slot;
+                    }
+                    break;
+                }
+                // ARG_GET carries a u16 argument index — must be decoded to keep pc aligned.
+                case ARG_GET: {
+                    if (pc + 2 <= code.size()) {
+                        uint16_t idx = (code[pc] << 8) | code[pc+1];
+                        pc += 2;
+                        std::cout << " arg#" << idx;
                     }
                     break;
                 }
@@ -213,19 +229,33 @@ void disassemble(const std::string& filename, bool verbose) {
                 case ISTORE:
                 case FSTORE:
                 case ASTORE: {
-                    if (pc + 1 < code.size()) {
+                    if (pc + 2 <= code.size()) {
                         uint16_t local = (code[pc] << 8) | code[pc+1];
                         pc += 2;
                         std::cout << " local#" << local;
                     }
                     break;
                 }
+                // ADDR_OF carries a u16 local slot number.
+                case ADDR_OF: {
+                    if (pc + 2 <= code.size()) {
+                        uint16_t slot = (code[pc] << 8) | code[pc+1];
+                        pc += 2;
+                        std::cout << " slot#" << slot;
+                    }
+                    break;
+                }
+                // All branch opcodes take a 4-byte absolute target address.
+                // IFNE, IFLE, IFGE were previously missing — their 4 operand bytes
+                // would have been misread as opcodes, corrupting all output after them.
                 case GOTO:
                 case IFEQ:
                 case IFNE:
                 case IFLT:
-                case IFGT: {
-                    if (pc + 3 < code.size()) {
+                case IFGT:
+                case ICMP_LE:   // 0x34 — reused as IFLE in jump encoding
+                case ICMP_GE: { // 0x35 — reused as IFGE in jump encoding
+                    if (pc + 4 <= code.size()) {
                         uint32_t offset = (code[pc] << 24) | (code[pc+1] << 16) |
                                          (code[pc+2] << 8) | code[pc+3];
                         pc += 4;
@@ -234,7 +264,7 @@ void disassemble(const std::string& filename, bool verbose) {
                     break;
                 }
                 case CALL: {
-                    if (pc + 5 < code.size()) {
+                    if (pc + 6 <= code.size()) {
                         uint32_t funcIdx = (code[pc] << 24) | (code[pc+1] << 16) |
                                           (code[pc+2] << 8) | code[pc+3];
                         uint16_t argCount = (code[pc+4] << 8) | code[pc+5];
@@ -244,7 +274,7 @@ void disassemble(const std::string& filename, bool verbose) {
                     break;
                 }
                 case NEWARRAY: {
-                    if (pc + 3 < code.size()) {
+                    if (pc + 4 <= code.size()) {
                         uint32_t size = (code[pc] << 24) | (code[pc+1] << 16) |
                                        (code[pc+2] << 8) | code[pc+3];
                         pc += 4;
@@ -253,10 +283,10 @@ void disassemble(const std::string& filename, bool verbose) {
                     break;
                 }
                 case EXEC: {
-                    if (pc + 7 < code.size()) {
+                    if (pc + 8 <= code.size()) {
                         uint32_t opIdx = (code[pc] << 24) | (code[pc+1] << 16) |
                                         (code[pc+2] << 8) | code[pc+3];
-                        uint16_t posArgc = (code[pc+4] << 8) | code[pc+5];
+                        uint16_t posArgc   = (code[pc+4] << 8) | code[pc+5];
                         uint16_t namedArgc = (code[pc+6] << 8) | code[pc+7];
                         pc += 8;
                         std::cout << " op=#" << opIdx;

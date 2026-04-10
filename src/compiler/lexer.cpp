@@ -22,6 +22,8 @@ enum class TokenType {
     ASSIGN, EQUAL, NOT_EQUAL,
     LESS, GREATER, LESS_EQUAL, GREATER_EQUAL,
     INCREMENT, DECREMENT,  // ++ and --
+    AMP,                   // & (address-of)
+    COLON,                 // : (type annotation separator)
 
     // Delimiters
     LPAREN, RPAREN, LBRACE, RBRACE, LBRACKET, RBRACKET,
@@ -29,7 +31,11 @@ enum class TokenType {
 
     // Special
     HASH,
-    END_OF_FILE, UNKNOWN
+    NEWLINE,
+    END_OF_FILE, UNKNOWN,
+
+    // Memory management keywords
+    ALLOC, FREE, OWN, PTR, BORROW
 };
 
 struct Token {
@@ -48,6 +54,7 @@ private:
     size_t pos;
     int line;
     int column;
+    int parenDepth;   // tracks ( ) and [ ] nesting; newlines inside are ignored
 
     std::map<std::string, TokenType> keywords = {
         {"func", TokenType::FUNC},
@@ -59,7 +66,13 @@ private:
         {"print", TokenType::PRINT},
         {"write", TokenType::WRITE},
         {"import", TokenType::IMPORT},
-        {"len", TokenType::IDENTIFIER}  // len is treated as identifier (built-in function)
+        {"len", TokenType::IDENTIFIER},  // len is treated as identifier (built-in function)
+        // Memory management keywords
+        {"alloc",  TokenType::ALLOC},
+        {"free",   TokenType::FREE},
+        {"own",    TokenType::OWN},
+        {"ptr",    TokenType::PTR},
+        {"borrow", TokenType::BORROW},
     };
 
     char current() const {
@@ -182,15 +195,39 @@ private:
 
 public:
     explicit Lexer(const std::string& src)
-        : source(src), pos(0), line(1), column(1) {}
+        : source(src), pos(0), line(1), column(1), parenDepth(0) {}
 
     std::vector<Token> tokenize() {
         std::vector<Token> tokens;
 
         while (pos < source.length()) {
-            skipWhitespace();
+            // Consume horizontal whitespace only (spaces/tabs/CR).
+            // We handle '\n' ourselves below so we can emit NEWLINE tokens.
+            while (pos < source.length() &&
+                   (source[pos] == ' ' || source[pos] == '\t' || source[pos] == '\r')) {
+                advance();
+            }
 
             if (pos >= source.length()) break;
+
+            // Newline — emit one NEWLINE token per logical line break,
+            // but only when we are not inside ( ) or [ ] where line
+            // continuation is implicit (like Python / Go).
+            if (source[pos] == '\n') {
+                int nlLine = line;
+                int nlCol  = column;
+                // Skip all consecutive newlines / blank lines.
+                while (pos < source.length() && source[pos] == '\n') {
+                    advance();
+                }
+                // Only emit if we are at the top level (not inside brackets).
+                if (parenDepth == 0 && !tokens.empty() &&
+                    tokens.back().type != TokenType::NEWLINE &&
+                    tokens.back().type != TokenType::LBRACE) {
+                    tokens.push_back(Token(TokenType::NEWLINE, "\n", nlLine, nlCol));
+                }
+                continue;
+            }
 
             // Skip comments
             if (current() == '/' && (peek() == '/' || peek() == '*')) {
@@ -311,11 +348,13 @@ public:
                     break;
 
                 case '(':
+                    parenDepth++;
                     tokens.push_back(Token(TokenType::LPAREN, "(", startLine, startColumn));
                     advance();
                     break;
 
                 case ')':
+                    if (parenDepth > 0) parenDepth--;
                     tokens.push_back(Token(TokenType::RPAREN, ")", startLine, startColumn));
                     advance();
                     break;
@@ -331,11 +370,13 @@ public:
                     break;
 
                 case '[':
+                    parenDepth++;
                     tokens.push_back(Token(TokenType::LBRACKET, "[", startLine, startColumn));
                     advance();
                     break;
 
                 case ']':
+                    if (parenDepth > 0) parenDepth--;
                     tokens.push_back(Token(TokenType::RBRACKET, "]", startLine, startColumn));
                     advance();
                     break;
@@ -347,6 +388,16 @@ public:
 
                 case ';':
                     tokens.push_back(Token(TokenType::SEMICOLON, ";", startLine, startColumn));
+                    advance();
+                    break;
+
+                case '&':
+                    tokens.push_back(Token(TokenType::AMP, "&", startLine, startColumn));
+                    advance();
+                    break;
+
+                case ':':
+                    tokens.push_back(Token(TokenType::COLON, ":", startLine, startColumn));
                     advance();
                     break;
 

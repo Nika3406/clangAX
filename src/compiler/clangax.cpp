@@ -11,7 +11,7 @@ using namespace ClangAX;
 
 static void printUsage(const char* programName) {
     std::cout
-        << "ClangAX Compiler v2.0 (with Libraries)\n"
+        << "ClangAX Compiler v3.0 (with Libraries)\n"
         << "Usage: " << programName << " <source.cax> [options]\n\n"
         << "Options:\n"
         << "  -o <name>       Specify output filename base (default: output)\n"
@@ -31,7 +31,7 @@ static void printUsage(const char* programName) {
 }
 
 static void printVersion() {
-    std::cout << "ClangAX Compiler v1.1 (Library Support)\n";
+    std::cout << "ClangAX Compiler v3.0 (Library Support)\n";
 }
 
 static void printLibraries() {

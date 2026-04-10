@@ -103,6 +103,13 @@ namespace ClangAX {
 
         // Privileged exec dispatcher
         EXEC = 0xB0,         // u32 opNameConstIdx, u16 posArgc, u16 namedArgc
+
+        // Manual memory management (0xC0-0xC4)
+        ALLOC      = 0xC0,   // value -> ptr          (allocates a heap cell, stores value in it)
+        FREE       = 0xC1,   // ptr  -> (void)        (marks the heap cell dead, increments generation)
+        DEREF      = 0xC2,   // ptr  -> value         (reads the heap cell; aborts if dead/stale)
+        DEREF_STORE= 0xC3,   // ptr, value -> (void)  (overwrites an existing heap cell)
+        ADDR_OF    = 0xC4,   // u16 slot -> ptr       (returns a pointer to a local variable's heap copy)
     };
 
     // Constant pool types
@@ -115,7 +122,7 @@ namespace ClangAX {
 
     // Bytecode file format constants
     constexpr uint32_t CAXB_MAGIC = 0x43415842;  // "CAXB"
-    constexpr uint16_t CAXB_VERSION = 0x0001;
+    constexpr uint16_t CAXB_VERSION = 0x0002;     // v2: manual memory management opcodes
 
 } // namespace ClangAX
 

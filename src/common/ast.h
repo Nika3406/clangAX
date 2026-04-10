@@ -23,6 +23,7 @@ namespace ClangAX {
         RETURN_STMT,
         PRINT_STMT,
         EXPRESSION_STMT,
+        FREE_STMT,           // free(ptr) — explicit deallocation statement
 
         // Expressions
         BINARY_OP,
@@ -34,12 +35,19 @@ namespace ClangAX {
         NAMED_ARG,
         ARRAY_ACCESS,
         ARRAY_LITERAL,
+        ALLOC_EXPR,          // alloc(expr) — heap-allocates a value, returns a pointer
+        DEREF_EXPR,          // *ptr        — reads through a pointer
+        ADDR_OF_EXPR,        // &var        — takes address of a local (returns pointer)
+        DEREF_ASSIGN,        // *ptr = expr — writes a value through a pointer (statement form)
 
         // Types
         TYPE_INT,
         TYPE_FLOAT,
         TYPE_BOOL,
         TYPE_ARRAY,
+        TYPE_PTR,            // ptr<T>    — raw (non-owning) pointer
+        TYPE_OWN,            // own<T>    — owning pointer, auto-freed at scope exit
+        TYPE_BORROW,         // borrow<T> — temporary non-owning reference
     };
 
     // AST Node Structure

@@ -57,10 +57,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/nika3406/clangAX
+CMAKE_SOURCE_DIR = /home/nika3406/AX/clangAX
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/nika3406/clangAX/cmake-build-debug
+CMAKE_BINARY_DIR = /home/nika3406/AX/clangAX/cmake-build-debug
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -132,9 +132,9 @@ install/strip/fast: preinstall/fast
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/nika3406/clangAX/cmake-build-debug/CMakeFiles /home/nika3406/clangAX/cmake-build-debug//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/nika3406/AX/clangAX/cmake-build-debug/CMakeFiles /home/nika3406/AX/clangAX/cmake-build-debug//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/nika3406/clangAX/cmake-build-debug/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/nika3406/AX/clangAX/cmake-build-debug/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -187,11 +187,6 @@ clangax/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/clangax.dir/build.make CMakeFiles/clangax.dir/build
 .PHONY : clangax/fast
 
-# Manual pre-install relink rule for target.
-clangax/preinstall:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/clangax.dir/build.make CMakeFiles/clangax.dir/preinstall
-.PHONY : clangax/preinstall
-
 #=============================================================================
 # Target rules for targets named caxvm
 
@@ -205,11 +200,6 @@ caxvm/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/caxvm.dir/build.make CMakeFiles/caxvm.dir/build
 .PHONY : caxvm/fast
 
-# Manual pre-install relink rule for target.
-caxvm/preinstall:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/caxvm.dir/build.make CMakeFiles/caxvm.dir/preinstall
-.PHONY : caxvm/preinstall
-
 #=============================================================================
 # Target rules for targets named caxdis
 
@@ -222,11 +212,6 @@ caxdis: cmake_check_build_system
 caxdis/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/caxdis.dir/build.make CMakeFiles/caxdis.dir/build
 .PHONY : caxdis/fast
-
-# Manual pre-install relink rule for target.
-caxdis/preinstall:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/caxdis.dir/build.make CMakeFiles/caxdis.dir/preinstall
-.PHONY : caxdis/preinstall
 
 src/common/gpu_detect.o: src/common/gpu_detect.cpp.o
 .PHONY : src/common/gpu_detect.o
